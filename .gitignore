@@ -1,14 +1,10 @@
 ###########
 # Project #
 ###########
-# try/
-# prueba_profes/
+
 dataset/
-
-# Virtual environment
-
-# Environments
-env/
+stock_data/
+.venv/
 
 # Byte-compiled / optimized / DLL files
 __pycache__

@@ -3,7 +3,7 @@ import os
 import shutil
 
 # Path to the dataset folder within the project
-dataset_dir = os.path.join(os.getcwd(), 'dataset')
+dataset_dir = os.path.join(os.getcwd(), 'stock_data')
 
 # Create the dataset folder if it doesn't exist
 if not os.path.exists(dataset_dir):
