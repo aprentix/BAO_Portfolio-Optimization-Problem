@@ -2,9 +2,11 @@
 # Project #
 ###########
 
-dataset/
-stock_data/
+/dataset
+/stock_data
 .venv/
+
+!src/
 
 # Byte-compiled / optimized / DLL files
 __pycache__
