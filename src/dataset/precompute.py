@@ -23,14 +23,12 @@ from pathlib import Path
 class StockAnalyzer:
     """Class for analyzing stock data and calculating financial metrics."""
 
-    # Constants
-    RISK_FREE_RATE_ANNUAL = 0.042  # 4.2% annualized
-    TRADING_DAYS = 252
-
     def __init__(self,
                  stock_data_root: str,
                  stock_data_dir: str,
                  output_dir: str,
+                 risk_free_rate_annual: float = 0.042,
+                 trading_days: int = 252,
                  start_date: str = "2015-01-01",
                  end_date: str = "2020-01-01",
                  max_stocks: Optional[int] = None):
@@ -47,6 +45,8 @@ class StockAnalyzer:
         self.stock_data_root = Path(stock_data_root)
         self.stock_data_dir = Path(stock_data_dir)
         self.output_dir = Path(output_dir)
+        self.risk_free_rate_annual = risk_free_rate_annual
+        self.trading_days = trading_days
         self.start_date = start_date
         self.end_date = end_date
         self.max_stocks = max_stocks
@@ -64,7 +64,7 @@ class StockAnalyzer:
         }
 
         # Calculated risk-free rate (daily)
-        self.risk_free_rate_daily = self.RISK_FREE_RATE_ANNUAL / self.TRADING_DAYS
+        self.risk_free_rate_daily = self.risk_free_rate_annual / self.trading_days
 
         # Create needed directories
         self._setup_directories()
@@ -81,7 +81,7 @@ class StockAnalyzer:
         print(f"Output directory: {self.output_dir}")
 
         # Create risk-free rate directory
-        rfr_folder_name = f"{self.RISK_FREE_RATE_ANNUAL*100:.1f}".replace(
+        rfr_folder_name = f"{self.risk_free_rate_annual*100:.1f}".replace(
             ".", "-") + "-risk-free-rate"
         self.rfr_dir = self.output_dir / rfr_folder_name
         self.rfr_dir.mkdir(exist_ok=True)
@@ -191,7 +191,7 @@ class StockAnalyzer:
 
     def calculate_statistics(self, mean_excess: pd.DataFrame, std_excess: pd.DataFrame, sharpe_ratios: pd.DataFrame) -> pd.DataFrame:
         """
-        Combine pre-calculated statistics into a summary DataFrame.
+        Combine pre-calculated statistics into a annual summary DataFrame.
 
         Args:
             mean_excess: Series with mean excess returns (daily)
@@ -201,9 +201,9 @@ class StockAnalyzer:
         Returns:
             DataFrame with combined statistics
         """
-        annual_mean_excess = mean_excess * self.TRADING_DAYS
-        annual_std_excess = std_excess * np.sqrt(self.TRADING_DAYS)
-        annual_sharpe_ratios = sharpe_ratios * np.sqrt(self.TRADING_DAYS)
+        annual_mean_excess = mean_excess * self.trading_days
+        annual_std_excess = std_excess * np.sqrt(self.trading_days)
+        annual_sharpe_ratios = sharpe_ratios * np.sqrt(self.trading_days)
 
         statistics_df = pd.DataFrame({
             "Mean Excess Return": annual_mean_excess,
@@ -232,18 +232,36 @@ class StockAnalyzer:
         # Copy symbols file
         self.copy_symbols_file()
 
-        # Load price data
-        prices = self.load_stock_data()
+        # Check if daily returns file already exists
+        daily_returns_path = self.output_dir / self.file_names['daily_returns']
+        daily_excess_returns_path = self.rfr_dir / \
+            self.file_names['daily_excess_returns']
 
-        # Calculate daily returns
-        returns = self.calculate_returns(prices)
-        self.save_dataframe(returns, self.output_dir /
-                            self.file_names['daily_returns'])
+        returns = None
+        excess_returns = None
 
-        # Calculate excess returns
-        excess_returns = self.calculate_excess_returns(returns)
-        self.save_dataframe(excess_returns, self.rfr_dir /
-                            self.file_names['daily_excess_returns'])
+        if not daily_returns_path.exists():
+            print("Loading stock data and calculating returns...")
+            # Load price data
+            prices = self.load_stock_data()
+            # Calculate daily returns
+            returns = self.calculate_returns(prices)
+            self.save_dataframe(returns, self.output_dir /
+                                self.file_names['daily_returns'])
+        else:
+            print(f"Using existing returns file {daily_returns_path}:")
+            returns = pd.read_csv(daily_returns_path,
+                                  index_col=0, parse_dates=True)
+
+        if not daily_excess_returns_path.exists():
+            # Calculate excess returns
+            excess_returns = self.calculate_excess_returns(returns)
+            self.save_dataframe(excess_returns, self.rfr_dir /
+                                self.file_names['daily_excess_returns'])
+        else:
+            print(f"Using existing excess returns file {daily_excess_returns_path}:")
+            excess_returns = pd.read_csv(
+                daily_excess_returns_path, index_col=0, parse_dates=True)
 
         # Filter by date range
         filtered_excess_returns = self.filter_by_date_range(excess_returns)
@@ -259,7 +277,7 @@ class StockAnalyzer:
                             self.file_names['daily_volatility'])
 
         # Calculate and save Sharpe ratios
-        sharpe_ratios = (mean_excess / std_excess) * np.sqrt(self.TRADING_DAYS)
+        sharpe_ratios = (mean_excess / std_excess)
         self.save_dataframe(sharpe_ratios, self.period_dir /
                             self.file_names['sharpe_ratio'])
 
@@ -290,6 +308,8 @@ def main():
             stock_data_root=stock_data_root,
             stock_data_dir=stock_data_dir,
             output_dir=output_dir,
+            risk_free_rate_annual=0.042,
+            trading_days=252,
             start_date="2015-01-01",
             end_date="2020-01-01",
             max_stocks=5
