@@ -60,7 +60,7 @@ class StockAnalyzer:
             'sharpe_ratio': 'daily_sharpe_ratio_companies.csv',
             'annual_resume': 'annual_resume_companies.csv',
             'correlation': 'correlation_companies.csv',
-            'symbols_valid_meta' :  'symbols_valid_meta.csv'
+            'symbols_valid_meta':  'symbols_valid_meta.csv'
         }
 
         # Calculated risk-free rate (daily)
@@ -96,8 +96,10 @@ class StockAnalyzer:
     def copy_symbols_file(self) -> None:
         """Copy the symbols metadata file to the output directory."""
         try:
-            source_file = self.stock_data_root / self.file_names['symbols_valid_meta']
-            target_file = self.output_dir / self.file_names['symbols_valid_meta']
+            source_file = self.stock_data_root / \
+                self.file_names['symbols_valid_meta']
+            target_file = self.output_dir / \
+                self.file_names['symbols_valid_meta']
             if source_file.exists():
                 shutil.copy(source_file, target_file)
                 print(f"Copied symbols file to {target_file}")
@@ -190,12 +192,12 @@ class StockAnalyzer:
     def calculate_statistics(self, mean_excess: pd.DataFrame, std_excess: pd.DataFrame, sharpe_ratios: pd.DataFrame) -> pd.DataFrame:
         """
         Combine pre-calculated statistics into a summary DataFrame.
-        
+
         Args:
             mean_excess: Series with mean excess returns (daily)
             std_excess: Series with standard deviations (daily)
             sharpe_ratios: Series with Sharpe ratios (daily)
-            
+
         Returns:
             DataFrame with combined statistics
         """
@@ -245,10 +247,6 @@ class StockAnalyzer:
 
         # Filter by date range
         filtered_excess_returns = self.filter_by_date_range(excess_returns)
-        
-        ## TEMP
-        self.save_dataframe(filtered_excess_returns, self.period_dir / "filtered_excess_returns.csv")
-        ## TEMP
 
         # Calculate and save mean excess returns
         mean_excess = filtered_excess_returns.mean()
@@ -266,7 +264,8 @@ class StockAnalyzer:
                             self.file_names['sharpe_ratio'])
 
         # Calculate and save statistics summary
-        statistics_df = self.calculate_statistics(mean_excess=mean_excess, std_excess=std_excess, sharpe_ratios=sharpe_ratios)
+        statistics_df = self.calculate_statistics(
+            mean_excess=mean_excess, std_excess=std_excess, sharpe_ratios=sharpe_ratios)
         self.save_dataframe(statistics_df, self.period_dir /
                             self.file_names['annual_resume'])
 
@@ -293,7 +292,7 @@ def main():
             output_dir=output_dir,
             start_date="2015-01-01",
             end_date="2020-01-01",
-            max_stocks=5  # Limit to 5 stocks as in original script
+            max_stocks=5
         )
 
         # Run analysis
