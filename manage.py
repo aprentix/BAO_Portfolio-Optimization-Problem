@@ -30,4 +30,5 @@ if __name__ == "__main__":
             case "i_dep": install_dependencies()
             case "down_data": download_dataset()
             case "setup": setup()
+            case "help": help()
             case _: help()
