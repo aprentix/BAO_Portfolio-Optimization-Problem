@@ -2,33 +2,118 @@
 
 import sys
 import os
+import platform
+import subprocess
+import shutil
+
+
+def get_python_command():
+    python_cmd = sys.executable
+    if not python_cmd:
+        # Try to find python command
+        if shutil.which("python3"):
+            python_cmd = "python3"
+        elif shutil.which("python"):
+            python_cmd = "python"
+        else:
+            raise RuntimeError("Could not find Python executable")
+    return python_cmd
+
+
+def get_pip_command(venv_path=None):
+    if venv_path:
+        if platform.system() == "Windows":
+            pip_paths = [
+                os.path.join(venv_path, "Scripts", "pip.exe"),
+                os.path.join(venv_path, "Scripts", "pip3.exe")
+            ]
+        else:
+            pip_paths = [
+                os.path.join(venv_path, "bin", "pip"),
+                os.path.join(venv_path, "bin", "pip3")
+            ]
+
+        for pip_path in pip_paths:
+            if os.path.exists(pip_path):
+                return pip_path
+
+        # If direct path not found, try using python -m pip
+        python_path = get_venv_python_path(venv_path)
+        return [python_path, "-m", "pip"]
+    else:
+        # Check system pip
+        if shutil.which("pip3"):
+            return "pip3"
+        elif shutil.which("pip"):
+            return "pip"
+        else:
+            # Use python -m pip as fallback
+            return [get_python_command(), "-m", "pip"]
+
+
+def get_venv_python_path(venv_path):
+    if platform.system() == "Windows":
+        return os.path.join(venv_path, "Scripts", "python.exe")
+    else:
+        return os.path.join(venv_path, "bin", "python")
+
 
 def install_dependencies():
-    os.system("python3 -m venv .venv")
-    os.system("source .venv/bin/activate")
-    os.system("pip install -r requirements.txt")
+    python_cmd = get_python_command()
+    venv_path = ".venv"
+
+    # Create virtual environment
+    subprocess.run([python_cmd, "-m", "venv", venv_path], check=True)
+
+    # Get pip command inside virtual environment
+    pip_cmd = get_pip_command(venv_path)
+
+    # Install requirements
+    if isinstance(pip_cmd, list):
+        subprocess.run(pip_cmd + ["install", "-r",
+                       "requirements.txt"], check=True)
+    else:
+        if platform.system() == "Windows":
+            subprocess.run([pip_cmd, "install", "-r",
+                           "requirements.txt"], check=True)
+        else:
+            subprocess.run(
+                ["bash", "-c", f"source {venv_path}/bin/activate && {pip_cmd} install -r requirements.txt"], check=True)
+
 
 def download_dataset():
-    os.system("python3 src/dataset/download.py")
+    venv_python = get_venv_python_path(".venv")
+    subprocess.run([venv_python, "src/dataset/download.py"], check=True)
+
 
 def setup():
     install_dependencies()
     download_dataset()
 
+
 def help():
+    script_name = os.path.basename(sys.argv[0])
+    python_cmd = "python" if platform.system() == "Windows" else get_python_command()
+
     print("Possible commands:")
-    print(" python3 manage.py i_dep        # Install project dependencies")
-    print(" python3 manage.py down_data    # Download project dataset")
-    print(" python3 manage.py setup        # Setup project")
+    print(f" {python_cmd} {script_name} i_dep        # Install project dependencies")
+    print(f" {python_cmd} {script_name} down_data    # Download project dataset")
+    print(f" {python_cmd} {script_name} setup        # Setup project")
+    print(f" {python_cmd} {script_name} help         # Show this help message")
+
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         help()
     else:
         cmd = sys.argv[1]
-        match(cmd):
-            case "i_dep": install_dependencies()
-            case "down_data": download_dataset()
-            case "setup": setup()
-            case "help": help()
-            case _: help()
+        if cmd == "i_dep":
+            install_dependencies()
+        elif cmd == "down_data":
+            download_dataset()
+        elif cmd == "setup":
+            setup()
+        elif cmd == "help":
+            help()
+        else:
+            help()
