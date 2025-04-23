@@ -9,12 +9,19 @@ def main():
     end_date = "2020-01-01"
 
     dataset_manager = DatasetManager('dataset')
-    _ , _, sharpe_ratios = dataset_manager.read_annual_resume(
-        risk_free_rate_annual, start_date, end_date, n_companies)
-    correlation = dataset_manager.read_correlation(
-        risk_free_rate_annual, start_date, end_date, n_companies)
 
-    problem_context = PortfolioOptimization()
+    _, _, sharpe_ratios, meta = dataset_manager.read_annual_resume_same_level_correlation('low', risk_free_rate_annual, start_date, end_date, n_companies)
+
+    print(meta)
+    print(sharpe_ratios)
+
+    #_, _, sharpe_ratios = dataset_manager.read_annual_resume(risk_free_rate_annual, start_date, end_date, n_companies)
+
+    # problem = PortfolioOptimization(num_companies=n_companies, sharpe_ratios=sharpe_ratios)
+
+    # solution = problem.optimize(algorithm_type="ga")
+
+    # print(solution)
 
 
 if __name__ == "__main__":

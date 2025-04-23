@@ -1,14 +1,12 @@
 import numpy as np
 from inspyred import ec, benchmarks
-from random import Random
-
+from ga.ga_portfolio_optimization import GAPortfolioOptimization
 
 class PortfolioOptimization(benchmarks.Benchmark):
-    def __init__(self, num_companies, sharpe_ratios, cov_matrix):
+    def __init__(self, num_companies, sharpe_ratios):
         super().__init__(num_companies)
         self.num_companies = num_companies
         self.sharpe_ratios = sharpe_ratios
-        self.
         self.bounder = ec.RealBounder(
             [0.0] * num_companies, [1.0] * num_companies)
 
@@ -25,6 +23,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
             if not np.isclose(sum(weights), 1.0) or (weights < 0).any():
                 fitness.append(-np.inf)
                 continue
+            
             # Calculate Sharpe Ratio
             port_return = np.dot(weights, self.mean_returns)
             port_volatility = np.sqrt(
@@ -94,3 +93,20 @@ class PortfolioOptimization(benchmarks.Benchmark):
             repaired.append(weights.tolist())
 
         return repaired
+    
+    def optimize(self, algorithm_type: str, **kwargs):
+        match(algorithm_type):
+            case "ga":
+                return self.__run_ga(kwargs)
+            case "pso":
+                return self.__run_pso(kwargs)
+            case _:
+                raise ValueError(f"Algorithm {algorithm_type} doesn\'t exist")
+            
+    def __run_ga(self, **kwargs):
+        ga = GAPortfolioOptimization(kwargs)
+
+        return ga.run()
+
+    def __run_pso(self, **kwargs):
+        return None
