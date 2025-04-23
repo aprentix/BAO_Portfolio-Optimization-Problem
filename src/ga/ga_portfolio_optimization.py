@@ -2,10 +2,11 @@ import numpy as np
 from inspyred import ec, benchmarks
 from random import Random
 
+from benchmarks.portfolio_optimization import PortfolioOptimization
 
 class GAPortfolioOptimization:
-    def __init__(self, num_assets, mean_returns, cov_matrix, **kwargs):
-        self.problem = PortfolioOptimization(num_assets, mean_returns, cov_matrix)
+    def __init__(self, context: PortfolioOptimization, **kwargs):
+        self.context = context
         self.pop_size = kwargs.get('pop_size', 100)
         self.max_generations = kwargs.get('max_generations', 100)
         self.selector = kwargs.get('selector', ec.selectors.tournament_selection)
