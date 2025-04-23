@@ -78,7 +78,7 @@ class DatasetManager:
 
     def __is_valid_path(self, path: str):
         full_path = Path(path)
-        if full_path.exists():
+        if not full_path.exists():
             raise FileNotFoundError(f'Path {full_path} is empty')
 
     def __is_valid_level(self, level: str):
