@@ -33,6 +33,6 @@ def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_fr
     problem: PortfolioOptimization = PortfolioOptimization(
         num_companies=num_companies, sharpe_ratios=sharpe_ratios.to_numpy())
 
-    solution: Solution = problem.optimize(algorithm_type, kwargs)
+    solution: Solution = problem.optimize(algorithm_type, **kwargs)
 
     return solution.decode(meta, annual_mean_returns)

@@ -97,7 +97,7 @@ class GAPortfolioOptimization:
         ga.observer = self.history_observer
         ga.variator = [
             ec.variators.blend_crossover,
-            ec.variators.Gaussian_mutation,
+            ec.variators.gaussian_mutation,
             self.portfolio_repair
         ]
         ga.selector = self.selector
