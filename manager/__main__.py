@@ -9,6 +9,7 @@ import argparse
 
 
 def get_python_command():
+    """Gets the Python command available in the system."""
     python_cmd = sys.executable
     if not python_cmd:
         # Try to find python command
@@ -22,84 +23,125 @@ def get_python_command():
 
 
 def get_pip_command(venv_path=None):
+    """Gets the pip command as a list for consistent usage."""
     if venv_path:
         if platform.system() == "Windows":
-            pip_paths = [
-                os.path.join(venv_path, "Scripts", "pip.exe"),
-                os.path.join(venv_path, "Scripts", "pip3.exe")
-            ]
+            python_path = os.path.join(venv_path, "Scripts", "python.exe")
         else:
-            pip_paths = [
-                os.path.join(venv_path, "bin", "pip"),
-                os.path.join(venv_path, "bin", "pip3")
-            ]
+            python_path = os.path.join(venv_path, "bin", "python")
 
-        for pip_path in pip_paths:
-            if os.path.exists(pip_path):
-                return pip_path
+        # Verify that the Python executable exists
+        if not os.path.exists(python_path):
+            raise RuntimeError(
+                f"Python not found in virtual environment: {python_path}")
 
-        # If direct path not found, try using python -m pip
-        python_path = get_venv_python_path(venv_path)
         return [python_path, "-m", "pip"]
     else:
-        # Check system pip
-        if shutil.which("pip3"):
-            return "pip3"
-        elif shutil.which("pip"):
-            return "pip"
-        else:
-            # Use python -m pip as fallback
-            return [get_python_command(), "-m", "pip"]
+        # Use python -m pip as standard
+        return [get_python_command(), "-m", "pip"]
 
 
 def get_venv_python_path(venv_path):
+    """Gets the path to the Python executable inside the virtual environment."""
     if platform.system() == "Windows":
         return os.path.join(venv_path, "Scripts", "python.exe")
     else:
         return os.path.join(venv_path, "bin", "python")
 
 
+def check_requirements_file():
+    """Verifies that the requirements.txt file exists."""
+    if not os.path.exists("requirements.txt"):
+        raise FileNotFoundError(
+            "requirements.txt file not found in the current directory")
+
+
+def check_dataset_script():
+    """Verifies that the dataset download script exists."""
+    dataset_script = os.path.join("pop", "dataset", "download.py")
+    if not os.path.exists(dataset_script):
+        raise FileNotFoundError(
+            f"Dataset download script not found: {dataset_script}")
+
+
 def install_dependencies():
-    python_cmd = get_python_command()
-    venv_path = ".venv"
+    """Installs project dependencies in a virtual environment."""
+    try:
+        # Verify requirements.txt
+        check_requirements_file()
 
-    # Create virtual environment
-    subprocess.run([python_cmd, "-m", "venv", venv_path], check=True)
+        python_cmd = get_python_command()
+        venv_path = ".venv"
 
-    # Get pip command inside virtual environment
-    pip_cmd = get_pip_command(venv_path)
+        # Create virtual environment if it doesn't exist
+        if not os.path.exists(venv_path):
+            print(f"[+] Creating virtual environment in {venv_path}...")
+            subprocess.run([python_cmd, "-m", "venv", venv_path], check=True)
+        else:
+            print(f"[*] Using existing virtual environment in {venv_path}")
 
-    # Install requirements
-    if isinstance(pip_cmd, list):
+        # Get pip command inside the virtual environment
+        pip_cmd = get_pip_command(venv_path)
+
+        # Install requirements
+        print("[+] Installing dependencies from requirements.txt...")
         subprocess.run(pip_cmd + ["install", "-r",
                        "requirements.txt"], check=True)
-    else:
-        if platform.system() == "Windows":
-            subprocess.run([pip_cmd, "install", "-r",
-                           "requirements.txt"], check=True)
-        else:
-            subprocess.run(
-                ["bash", "-c", f"source {venv_path}/bin/activate && {pip_cmd} install -r requirements.txt"], check=True)
 
-    print('[-] Please activate entrainment with')
+        print(
+            f"[-] Please activate the virtual environment with: {'".venv\\Scripts\\activate"' if platform.system() == 'Windows' else 'source .venv/bin/activate'}")
+
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"[!] Error installing dependencies: {e}")
+        return False
+    except FileNotFoundError as e:
+        print(f"[!] Error: {e}")
+        return False
+    except Exception as e:
+        print(f"[!] Unexpected error: {e}")
+        return False
 
 
 def download_dataset():
-    venv_python = get_venv_python_path(".venv")
-    subprocess.run([venv_python, "pop/dataset/download.py"], check=True)
+    """Downloads the project dataset."""
+    try:
+        # Verify dataset script
+        check_dataset_script()
+
+        venv_python = get_venv_python_path(".venv")
+        if not os.path.exists(venv_python):
+            print(
+                "[!] Virtual environment not found. Please run '--setup' or '--i-depend' first")
+            return False
+
+        print("[+] Downloading dataset...")
+        subprocess.run([venv_python, "pop/dataset/download.py"], check=True)
+        print("[+] Dataset successfully downloaded")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"[!] Error downloading dataset: {e}")
+        return False
+    except FileNotFoundError as e:
+        print(f"[!] Error: {e}")
+        return False
+    except Exception as e:
+        print(f"[!] Unexpected error: {e}")
+        return False
 
 
 def setup():
-    install_dependencies()
-    download_dataset()
+    """Sets up the complete project (dependencies + dataset)."""
+    if install_dependencies():
+        download_dataset()
 
 
 def main():
-    python_cmd = "python" if platform.system() == "Windows" else get_python_command()
+    """Main function that handles command line arguments."""
 
     parser = argparse.ArgumentParser(
-        description="Project manager script.",
-        epilog=f"Example: {python_cmd} --setup"
+        description="Project management script.",
+        epilog="Example: %(prog)s --help"
     )
 
     group = parser.add_mutually_exclusive_group()
