@@ -8,14 +8,24 @@
 
 ## How run project
 You can use manage project script. Example:
-- Setup project to run algorithms
+1. Setup project to run algorithms
 ```bash
-python3 manager.py --setup
+python3 manager --setup
 ```
 
 Other script's commands in help:
 ```bash
-python3 manager.py --help
+python3 manager -h
+```
+
+2. Optimize portfolio
+```bash
+python3 pop -t "ga" -n 25
+```
+
+Other script's commands in help:
+```bash
+python3 pop --help
 ```
 
 ## Background
