@@ -20,7 +20,7 @@ python3 manager -h
 
 2. Optimize portfolio
 ```bash
-python3 pop -t "ga" -n 25
+python3 pop -t ga -n 25
 ```
 
 Other script's commands in help:
