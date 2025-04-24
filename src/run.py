@@ -1,5 +1,6 @@
 from dataset import DatasetManager
 from benchmarks import PortfolioOptimization
+import sys
 
 
 def main():
@@ -13,6 +14,16 @@ def main():
     _, _, sharpe_ratios, meta = dataset_manager.read_annual_resume(
         risk_free_rate_annual, start_date, end_date, n_companies)
 
+    if len(meta) < n_companies:
+        print(
+            f"WARNING: Only {len(meta)} companies found, but {n_companies} were requested.")
+        user_input = input(
+            "Do you want to continue with the available companies? (y/n): ").strip().lower()
+
+        if user_input != 'y' and user_input != 'yes':
+            print("Operation cancelled by user.")
+            return 1
+
     problem = PortfolioOptimization(
         num_companies=n_companies, sharpe_ratios=sharpe_ratios)
 
@@ -20,9 +31,12 @@ def main():
 
     print(solution)
 
+    return 0
+
 
 if __name__ == "__main__":
     try:
-        main()
+        sys.exit(main())
     except Exception as e:
         print(e)
+        sys.exit(1)
