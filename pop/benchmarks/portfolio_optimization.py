@@ -30,7 +30,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
         super().__init__(num_companies)
         self.num_companies = num_companies
         self.sharpe_ratios = sharpe_ratios
-        self.bounder = ec.RealBounder(
+        self.bounder = ec.Bounder(
             [0.0] * num_companies, [1.0] * num_companies)
 
     def generator(self, random, args):
