@@ -1,7 +1,7 @@
 from inspyred import ec
 from random import Random
 
-from pop.util.solution import Solution
+from util.solution import Solution
 
 
 class GAPortfolioOptimization:

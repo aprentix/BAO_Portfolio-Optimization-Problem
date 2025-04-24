@@ -1,7 +1,7 @@
 import numpy as np
 from inspyred import ec, benchmarks
 from ga.ga_portfolio_optimization import GAPortfolioOptimization
-from pop.util.solution import Solution
+from util.solution import Solution
 
 
 class PortfolioOptimization(benchmarks.Benchmark):
