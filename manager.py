@@ -5,6 +5,7 @@ import os
 import platform
 import subprocess
 import shutil
+import argparse
 
 
 def get_python_command():
@@ -80,6 +81,8 @@ def install_dependencies():
             subprocess.run(
                 ["bash", "-c", f"source {venv_path}/bin/activate && {pip_cmd} install -r requirements.txt"], check=True)
 
+    print('[-] Please activate entrainment with')
+
 
 def download_dataset():
     venv_python = get_venv_python_path(".venv")
@@ -91,29 +94,30 @@ def setup():
     download_dataset()
 
 
-def help():
-    script_name = os.path.basename(sys.argv[0])
+def main():
     python_cmd = "python" if platform.system() == "Windows" else get_python_command()
 
-    print("Possible commands:")
-    print(f" {python_cmd} {script_name} i_dep        # Install project dependencies")
-    print(f" {python_cmd} {script_name} down_data    # Download project dataset")
-    print(f" {python_cmd} {script_name} setup        # Setup project")
-    print(f" {python_cmd} {script_name} help         # Show this help message")
+    parser = argparse.ArgumentParser(
+        description="Project manager script.",
+        epilog=f"Example: {python_cmd} --setup"
+    )
+
+    parser.add_argument(
+        '-s', '--setup', action="store_true", help="Setup project (dependencies + dataset)")
+    parser.add_argument('-i', '--i-depend', action="store_true",
+                        help="Install project dependencies")
+    parser.add_argument('-d', '--down-data', action="store_true",
+                        help="Download project dataset")
+
+    args = parser.parse_args()
+
+    if args.setup:
+        setup()
+    elif args.i_depend:
+        install_dependencies()
+    elif args.down_data:
+        download_dataset()
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        help()
-    else:
-        cmd = sys.argv[1]
-        if cmd == "i_dep":
-            install_dependencies()
-        elif cmd == "down_data":
-            download_dataset()
-        elif cmd == "setup":
-            setup()
-        elif cmd == "help":
-            help()
-        else:
-            help()
+    main()
