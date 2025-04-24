@@ -39,7 +39,7 @@ class DatasetManager:
         self.dataset_dir = os.path.join(os.getcwd(), dir_name)
 
     def read_annual_resume(self, risk_free_rate_annual: float, start_date: str, end_date: str,
-                           n_companies: Optional[int] = None, **kwargs):
+                           n_companies: Optional[int] = None, **kwargs) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list[str]]:
         """
         Read the annual resume data for companies within a specified period and risk-free rate.
 
@@ -85,7 +85,7 @@ class DatasetManager:
             raise RuntimeError(f"[-] Read annual resume error: {e}")
 
     def read_correlation(self, risk_free_rate_annual: float, start_date: str, end_date: str,
-                         n_companies: Optional[int] = None):
+                         n_companies: Optional[int] = None) -> tuple[pd.DataFrame, list[str]]:
         """
         Read the correlation matrix for companies within a specified period and risk-free rate.
 
@@ -122,7 +122,7 @@ class DatasetManager:
 
     def read_annual_resume_same_level_correlation(self, level: str, risk_free_rate_annual: float,
                                                   start_date: str, end_date: str,
-                                                  n_companies: Optional[int] = None):
+                                                  n_companies: Optional[int] = None) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list[str]]:
         """
         Read annual resume data filtered by correlation level.
 

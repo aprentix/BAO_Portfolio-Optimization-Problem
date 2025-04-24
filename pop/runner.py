@@ -1,5 +1,7 @@
 from dataset import DatasetManager
 from benchmarks import PortfolioOptimization
+from pandas import DataFrame
+from typing import List
 
 
 def runner(dataset_folder_name, n_companies: int, risk_free_rate_annual: float, start_date: str, end_date: str, **kwarg):
@@ -7,6 +9,8 @@ def runner(dataset_folder_name, n_companies: int, risk_free_rate_annual: float, 
 
     correlation_level = kwarg.get('correlation_level')
 
+    sharpe_ratios: DataFrame = None
+    meta: List[str] = []
     if correlation_level is not None:
         _, _, sharpe_ratios, meta = dataset_manager.read_annual_resume_same_level_correlation(correlation_level,
                                                                                               risk_free_rate_annual, start_date, end_date, n_companies)
@@ -25,7 +29,7 @@ def runner(dataset_folder_name, n_companies: int, risk_free_rate_annual: float, 
             return 1
 
     problem = PortfolioOptimization(
-        num_companies=n_companies, sharpe_ratios=sharpe_ratios)
+        num_companies=n_companies, sharpe_ratios=sharpe_ratios.to_numpy())
 
     solution = problem.optimize(algorithm_type="ga")
 

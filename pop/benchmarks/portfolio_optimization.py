@@ -4,7 +4,7 @@ from ga.ga_portfolio_optimization import GAPortfolioOptimization
 
 
 class PortfolioOptimization(benchmarks.Benchmark):
-    def __init__(self, num_companies, sharpe_ratios):
+    def __init__(self, num_companies: int, sharpe_ratios: np.array):
         super().__init__(num_companies)
         self.num_companies = num_companies
         self.sharpe_ratios = sharpe_ratios
@@ -25,16 +25,9 @@ class PortfolioOptimization(benchmarks.Benchmark):
                 fitness.append(-np.inf)
                 continue
 
-            # Calculate Sharpe Ratio
-            port_return = np.dot(weights, self.mean_returns)
-            port_volatility = np.sqrt(
-                np.dot(weights.T, np.dot(self.cov_matrix, weights)))
-            if port_volatility == 0:
-                sharpe_ratio = 0.0
-            else:
-                sharpe_ratio = (
-                    port_return - self.risk_free_rate) / port_volatility
-            fitness.append(sharpe_ratio)
+            portfolio_sharpe_ratio = np.sum(self.sharpe_ratios * weights)
+
+            fitness.append(portfolio_sharpe_ratio)
         return fitness
 
     @classmethod
