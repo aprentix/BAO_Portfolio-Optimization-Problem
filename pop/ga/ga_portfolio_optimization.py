@@ -1,6 +1,8 @@
 from inspyred import ec
 from random import Random
 
+from pop.util.solution import Solution
+
 
 class GAPortfolioOptimization:
     def __init__(self, **kwargs):
@@ -22,7 +24,7 @@ class GAPortfolioOptimization:
         best_fitness = max(population).fitness
         self.best_fitness_history.append(best_fitness)
 
-    def run(self, seed=None):
+    def run(self, seed=None) -> Solution:
         ga = ec.GA(Random(seed))
         ga.terminator = self.terminator
         ga.observer = self.history_observer
@@ -47,4 +49,4 @@ class GAPortfolioOptimization:
             tournament_size=self.tournament_size
         )
         best = max(final_pop)
-        return best.candidate, best.fitness
+        return Solution(best.candidate, best.fitness)

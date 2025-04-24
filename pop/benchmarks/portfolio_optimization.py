@@ -1,6 +1,7 @@
 import numpy as np
 from inspyred import ec, benchmarks
 from ga.ga_portfolio_optimization import GAPortfolioOptimization
+from pop.util.solution import Solution
 
 
 class PortfolioOptimization(benchmarks.Benchmark):
@@ -12,7 +13,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
             [0.0] * num_companies, [1.0] * num_companies)
 
     def generator(self, random, args):
-        weights = [random.random() for _ in range(self.num_assets)]
+        weights = [random.random() for _ in range(self.num_companies)]
         total = sum(weights)
         return [w / total for w in weights]
 
@@ -88,7 +89,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
 
         return repaired
 
-    def optimize(self, algorithm_type: str, **kwargs):
+    def optimize(self, algorithm_type: str, **kwargs) -> Solution:
         match(algorithm_type):
             case "ga":
                 return self.__run_ga(
@@ -112,10 +113,10 @@ class PortfolioOptimization(benchmarks.Benchmark):
             case _:
                 raise ValueError(f"Algorithm {algorithm_type} doesn\'t exist")
 
-    def __run_ga(self, **kwargs):
+    def __run_ga(self, **kwargs) -> Solution:
         ga = GAPortfolioOptimization(kwargs)
 
         return ga.run(seed=kwargs.get('seed'))
 
-    def __run_pso(self, **kwargs):
+    def __run_pso(self, **kwargs) -> Solution:
         return None

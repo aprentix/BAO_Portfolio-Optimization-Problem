@@ -1,21 +1,24 @@
-from dataset import DatasetManager
-from benchmarks import PortfolioOptimization
+from pop.dataset import DatasetManager
+from pop.benchmarks import PortfolioOptimization
 from pandas import DataFrame
 from typing import List
 
+from pop.util import Solution
 
-def runner(dataset_folder_name, n_companies: int, risk_free_rate_annual: float, start_date: str, end_date: str, **kwarg):
-    dataset_manager = DatasetManager(dataset_folder_name)
 
-    correlation_level = kwarg.get('correlation_level')
+def runner(algorithm_type: str, dataset_folder_name, n_companies: int, risk_free_rate_annual: float, start_date: str, end_date: str, **kwargs) -> tuple[float, float, dict[str, float]]:
+    dataset_manager: DatasetManager = DatasetManager(dataset_folder_name)
 
+    correlation_level = kwargs.get('correlation_level')
+
+    annual_mean_returns: DataFrame = None
     sharpe_ratios: DataFrame = None
     meta: List[str] = []
     if correlation_level is not None:
-        _, _, sharpe_ratios, meta = dataset_manager.read_annual_resume_same_level_correlation(correlation_level,
-                                                                                              risk_free_rate_annual, start_date, end_date, n_companies)
+        annual_mean_returns, _, sharpe_ratios, meta = dataset_manager.read_annual_resume_same_level_correlation(correlation_level,
+                                                                                                                risk_free_rate_annual, start_date, end_date, n_companies)
     else:
-        _, _, sharpe_ratios, meta = dataset_manager.read_annual_resume(
+        annual_mean_returns, _, sharpe_ratios, meta = dataset_manager.read_annual_resume(
             risk_free_rate_annual, start_date, end_date, n_companies)
 
     if len(meta) < n_companies:
@@ -25,14 +28,11 @@ def runner(dataset_folder_name, n_companies: int, risk_free_rate_annual: float, 
             "Do you want to continue with the available companies? (y/n): ").strip().lower()
 
         if user_input != 'y' and user_input != 'yes':
-            print("Operation cancelled by user.")
-            return 1
+            raise SystemExit("Operation cancelled by user")
 
     problem = PortfolioOptimization(
         num_companies=n_companies, sharpe_ratios=sharpe_ratios.to_numpy())
 
-    solution = problem.optimize(algorithm_type="ga")
+    solution: Solution = problem.optimize(algorithm_type, kwargs)
 
-    print(solution)
-
-    return 0
+    return solution.decode(meta, annual_mean_returns)
