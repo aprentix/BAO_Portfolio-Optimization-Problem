@@ -10,12 +10,12 @@
 You can use manage project script. Example:
 - Setup project to run algorithms
 ```bash
-python3 manage.py setup
+python3 manager.py --setup
 ```
 
 Other script's commands in help:
 ```bash
-python3 manage.py help
+python3 manager.py --help
 ```
 
 ## Background

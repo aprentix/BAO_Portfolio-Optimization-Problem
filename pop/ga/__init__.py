@@ -1,0 +1,1 @@
+from .ga_portfolio_optimization import GAPortfolioOptimization
