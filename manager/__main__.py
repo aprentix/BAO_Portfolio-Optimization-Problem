@@ -86,7 +86,7 @@ def install_dependencies():
 
 def download_dataset():
     venv_python = get_venv_python_path(".venv")
-    subprocess.run([venv_python, "src/dataset/download.py"], check=True)
+    subprocess.run([venv_python, "pop/dataset/download.py"], check=True)
 
 
 def setup():
@@ -106,9 +106,9 @@ def main():
     group.add_argument(
         '-s', '--setup', action="store_true", help="Setup project (dependencies + dataset)")
     group.add_argument('-i', '--i-depend', action="store_true",
-                        help="Install project dependencies")
+                       help="Install project dependencies")
     group.add_argument('-d', '--down-data', action="store_true",
-                        help="Download project dataset")
+                       help="Download project dataset")
 
     args = parser.parse_args()
 
@@ -116,8 +116,10 @@ def main():
         setup()
     elif args.i_depend:
         install_dependencies()
-    else:
+    elif args.down_data:
         download_dataset()
+    else:
+        parser.print_help()
 
 
 if __name__ == "__main__":
