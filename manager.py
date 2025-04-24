@@ -102,11 +102,12 @@ def main():
         epilog=f"Example: {python_cmd} --setup"
     )
 
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         '-s', '--setup', action="store_true", help="Setup project (dependencies + dataset)")
-    parser.add_argument('-i', '--i-depend', action="store_true",
+    group.add_argument('-i', '--i-depend', action="store_true",
                         help="Install project dependencies")
-    parser.add_argument('-d', '--down-data', action="store_true",
+    group.add_argument('-d', '--down-data', action="store_true",
                         help="Download project dataset")
 
     args = parser.parse_args()
@@ -115,7 +116,7 @@ def main():
         setup()
     elif args.i_depend:
         install_dependencies()
-    elif args.down_data:
+    else:
         download_dataset()
 
 
