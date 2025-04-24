@@ -35,4 +35,4 @@ def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_fr
 
     solution: Solution = problem.optimize(algorithm_type, **kwargs)
 
-    return solution.decode(meta, annual_mean_returns)
+    return solution.decode(dataset_manager.get_full_companies_names(meta), annual_mean_returns)
