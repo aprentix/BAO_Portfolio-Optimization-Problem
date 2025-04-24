@@ -2,6 +2,7 @@ import numpy as np
 from inspyred import ec, benchmarks
 from ga.ga_portfolio_optimization import GAPortfolioOptimization
 
+
 class PortfolioOptimization(benchmarks.Benchmark):
     def __init__(self, num_companies, sharpe_ratios):
         super().__init__(num_companies)
@@ -23,7 +24,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
             if not np.isclose(sum(weights), 1.0) or (weights < 0).any():
                 fitness.append(-np.inf)
                 continue
-            
+
             # Calculate Sharpe Ratio
             port_return = np.dot(weights, self.mean_returns)
             port_volatility = np.sqrt(
@@ -93,20 +94,35 @@ class PortfolioOptimization(benchmarks.Benchmark):
             repaired.append(weights.tolist())
 
         return repaired
-    
+
     def optimize(self, algorithm_type: str, **kwargs):
         match(algorithm_type):
             case "ga":
-                return self.__run_ga(kwargs)
+                return self.__run_ga(
+                    generator=self.generator,
+                    evaluator=self.evaluator,
+                    bounder=self.bounder,
+                    pop_size=kwargs.get('pop_size', 100),
+                    max_generations=kwargs.get('max_generations', 100),
+                    selector=kwargs.get(
+                        'selector', ec.selectors.tournament_selection),
+                    tournament_size=kwargs.get('tournament_size', 2),
+                    mutation_rate=kwargs.get('mutation_rate', 0.1),
+                    gaussian_stdev=kwargs.get('gaussian_stdev', 0.1),
+                    num_elites=kwargs.get('num_elites', 1),
+                    terminator=kwargs.get(
+                        'terminator', ec.terminators.generation_termination),
+                    portfolio_repair=self.portfolio_repair
+                )
             case "pso":
                 return self.__run_pso(kwargs)
             case _:
                 raise ValueError(f"Algorithm {algorithm_type} doesn\'t exist")
-            
+
     def __run_ga(self, **kwargs):
         ga = GAPortfolioOptimization(kwargs)
 
-        return ga.run()
+        return ga.run(seed=kwargs.get('seed'))
 
     def __run_pso(self, **kwargs):
         return None
