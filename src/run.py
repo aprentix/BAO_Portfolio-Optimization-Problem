@@ -10,19 +10,19 @@ def main():
 
     dataset_manager = DatasetManager('dataset')
 
-    _, _, sharpe_ratios, meta = dataset_manager.read_annual_resume_same_level_correlation('low', risk_free_rate_annual, start_date, end_date, n_companies)
+    _, _, sharpe_ratios, meta = dataset_manager.read_annual_resume(
+        risk_free_rate_annual, start_date, end_date, n_companies)
 
-    print(meta)
-    print(sharpe_ratios)
+    problem = PortfolioOptimization(
+        num_companies=n_companies, sharpe_ratios=sharpe_ratios)
 
-    #_, _, sharpe_ratios = dataset_manager.read_annual_resume(risk_free_rate_annual, start_date, end_date, n_companies)
+    solution = problem.optimize(algorithm_type="ga")
 
-    # problem = PortfolioOptimization(num_companies=n_companies, sharpe_ratios=sharpe_ratios)
-
-    # solution = problem.optimize(algorithm_type="ga")
-
-    # print(solution)
+    print(solution)
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print(e)
