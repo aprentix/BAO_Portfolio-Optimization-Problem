@@ -76,7 +76,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
         return fitness
 
     @classmethod
-    def portfolio_repair(random, candidates, args):
+    def portfolio_repair(cls, random, candidates, args):
         """
         Repair operator that ensures portfolio allocations satisfy constraints.
 
