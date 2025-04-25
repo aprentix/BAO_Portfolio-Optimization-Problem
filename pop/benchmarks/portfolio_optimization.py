@@ -49,7 +49,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
         total = sum(weights)
         return [w / total for w in weights]
 
-    def evaluator(self, candidates, args):
+    def evaluator(self, candidates, max_allocation, args):
         """
         Evaluate the fitness of candidate portfolio allocations based on Sharpe ratio.
 
@@ -66,14 +66,22 @@ class PortfolioOptimization(benchmarks.Benchmark):
         fitness = []
         for candidate in candidates:
             weights = np.array(candidate)
-            # Check constraints (sum=1, no negatives)
-            if not np.isclose(sum(weights), 1.0) or (weights < 0).any():
+            max_allocation = np.array(candidate, max_allocation)
+
+            # Check constraints
+            if not np.isclose(np.sum(weights), 1.0) or (weights < 0).any():
                 fitness.append(-np.inf)
                 continue
 
-            portfolio_sharpe_ratio = np.sum(self.sharpe_ratios * weights)
+            # Limits by active
+            if (weights > max_allocation).any():
+                fitness.append(-np.inf)
+                continue
 
+            # Sharpe ratio
+            portfolio_sharpe_ratio = np.sum(self.sharpe_ratios * weights)
             fitness.append(portfolio_sharpe_ratio)
+
         return fitness
     
     @classmethod
