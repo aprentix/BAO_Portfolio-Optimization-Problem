@@ -1,10 +1,10 @@
 ###########
 # Project #
 ###########
-
 /dataset
 /stock_data
 .venv/
+/pruebas
 
 !src/
 

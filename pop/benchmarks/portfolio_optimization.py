@@ -1,3 +1,4 @@
+import random
 import numpy as np
 from inspyred import ec, benchmarks
 from ga.ga_portfolio_optimization import GAPortfolioOptimization
@@ -74,16 +75,15 @@ class PortfolioOptimization(benchmarks.Benchmark):
 
             fitness.append(portfolio_sharpe_ratio)
         return fitness
-
+    
     @classmethod
-    def portfolio_repair(cls, random, candidates, args):
+    def repair_method_v_a(cls, random, candidates, args):
         """
         Repair operator that ensures portfolio allocations satisfy constraints.
 
         This method modifies invalid portfolios to satisfy the following constraints:
         1. All weights are non-negative
         2. Weights sum to 1.0
-        3. No individual weight exceeds max_weight (0.1 or 10%)
 
         Args:
             random: Random number generator.
@@ -93,67 +93,49 @@ class PortfolioOptimization(benchmarks.Benchmark):
         Returns:
             list: Repaired candidate portfolio allocations.
         """
-        max_weight = 0.1  # Maximum 10% allocation to any single asset
-        max_iterations = 100  # Try to satisfy soft constraint max_weight
         repaired = []
-
         for candidate in candidates:
-            weights = np.array(candidate)
-            iteration = 0
-            valid = False
-
-            while not valid and iteration < max_iterations:
-                iteration += 1
-                # Ensure non-negative weights
-                weights = np.maximum(weights, 0.0)
-                current_sum = np.sum(weights)
-
-                # Handle case where sum > 1: reduce largest weights first
-                if current_sum > 1.0:
-                    excess = current_sum - 1.0
-                    sorted_indices = np.argsort(-weights)
-                    for idx in sorted_indices:
-                        if excess <= 0:
-                            break
-                        deduction = min(excess, weights[idx])
-                        weights[idx] -= deduction
-                        excess -= deduction
-
-                # Handle case where sum < 1: add remainder to a random weight
-                elif current_sum < 1.0:
-                    remaining = 1.0 - current_sum
-                    idx = random.randint(0, len(weights) - 1)
-                    weights[idx] += remaining
-
-                # Handle case where weights exceed max_weight
-                over_indices = np.where(weights > max_weight)[0]
-                if len(over_indices) > 0:
-                    excess = np.sum(weights[over_indices] - max_weight)
-                    weights[over_indices] = max_weight
-                    under_indices = np.where(weights < max_weight)[0]
-                    if len(under_indices) > 0:
-                        remaining = excess
-                        while remaining > 1e-6:
-                            idx = random.choice(under_indices)
-                            available_space = max_weight - weights[idx]
-                            add_amount = min(available_space, remaining)
-                            weights[idx] += add_amount
-                            remaining -= add_amount
-                            if weights[idx] >= max_weight - 1e-6:
-                                under_indices = under_indices[under_indices != idx]
-                                if len(under_indices) == 0:
-                                    break
-                else:
-                    if np.isclose(np.sum(weights), 1.0, atol=1e-6):
-                        valid = True
-
-            # Final normalization to ensure sum equals 1.0 exactly
-            weights = np.maximum(weights, 0.0)
-            weights /= np.sum(weights)
-            repaired.append(weights.tolist())
-
+            total = sum(candidate)
+            repaired.append([(x / total) for x in candidate])
         return repaired
+    
+    @classmethod
+    def repair_method_v_b(cls, random, candidates, args):
+        """
+        Repair operator that ensures portfolio allocations satisfy constraints.
 
+        This method modifies invalid portfolios to satisfy the following constraints:
+        1. All weights are non-negative
+        2. Weights sum to 1.0
+
+        Args:
+            random: Random number generator.
+            candidates: List of candidate portfolio allocations to repair.
+            args: Additional arguments.
+
+        Returns:
+            list: Repaired candidate portfolio allocations.
+        """
+        repaired = []
+        for candidate in candidates:
+            arr = np.array(candidate, dtype=np.float64)
+            greater_than_zero = arr[arr > 0.0]
+            resto = 1 - greater_than_zero.sum()
+            result = np.copy(arr)
+            mask = arr > abs(resto) if resto < 0 else arr > 0
+
+            if resto < 0:
+                adjustment = abs(resto) / np.sum(mask)
+                result[mask] -= adjustment
+            else:
+                adjustment = abs(resto) / np.sum(mask)
+                result[mask] += adjustment
+
+            result = result / result.sum()
+        
+            repaired.append(result)
+        return repaired
+    
     def optimize(self, algorithm_type: str, **kwargs) -> Solution:
         """
         Execute the specified optimization algorithm to find optimal portfolio allocation.
@@ -197,7 +179,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
                     num_elites=kwargs.get('num_elites', 1),
                     terminator=kwargs.get(
                         'terminator', ec.terminators.generation_termination),
-                    portfolio_repair=self.portfolio_repair
+                    portfolio_repair=self.repair_method_v_a
                 )
             case "pso":
                 return self.__run_pso(kwargs)
