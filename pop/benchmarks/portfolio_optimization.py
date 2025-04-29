@@ -2,6 +2,7 @@ import random
 import numpy as np
 from inspyred import ec, benchmarks
 from ga.ga_portfolio_optimization import GAPortfolioOptimization
+from pso.pso_portfolio_optimization import PSOPortfolioOptimization, repair_portfolio_pso
 from util.solution import Solution
 
 
@@ -190,7 +191,17 @@ class PortfolioOptimization(benchmarks.Benchmark):
                     portfolio_repair=self.repair_method_v_a
                 )
             case "pso":
-                return self.__run_pso(kwargs)
+                return self.__run_pso(
+                    generator=self.generator,
+                    evaluator=self.evaluator,
+                    bounder=self.bounder,
+                    pop_size=kwargs.get('pop_size', 100),
+                    max_generations=kwargs.get('max_generations', 100),
+                    w=kwargs.get('w', 0.7),
+                    c1=kwargs.get('c1', 1.5),
+                    c2=kwargs.get('c2', 1.5),
+                    portfolio_repair=repair_portfolio_pso
+                )
             case _:
                 raise ValueError(f"Algorithm {algorithm_type} doesn\'t exist")
 
@@ -211,12 +222,21 @@ class PortfolioOptimization(benchmarks.Benchmark):
         """
         Run the particle swarm optimization for portfolio allocation.
 
-        Note: This method is currently a placeholder and not implemented.
-
         Args:
             **kwargs: Parameters for the PSO algorithm.
 
         Returns:
-            Solution: Best solution found by PSO (currently returns None).
+            Solution: Best solution found by the PSO algorithm.
         """
-        return None
+        pso = PSOPortfolioOptimization(
+            generator=lambda r: self.generator(r, None),
+            evaluator=lambda w: np.sum(np.array(w) * self.sharpe_ratios),
+            bounder=self.bounder,
+            pop_size=kwargs.get('pop_size', 100),
+            max_iterations=kwargs.get('max_generations', 100),
+            w=kwargs.get('w', 0.7),
+            c1=kwargs.get('c1', 1.5),
+            c2=kwargs.get('c2', 1.5),
+            portfolio_repair=repair_portfolio_pso
+        )
+        return pso.run(seed=kwargs.get('seed'))
