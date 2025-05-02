@@ -2,6 +2,7 @@ from inspyred import ec
 from random import Random
 
 from util.solution import Solution
+from util.repair_methods import repair_normalize, repair_clipped_normalize, repair_random_restart
 
 
 class GAPortfolioOptimization:

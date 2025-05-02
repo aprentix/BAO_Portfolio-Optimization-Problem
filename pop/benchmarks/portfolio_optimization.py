@@ -2,8 +2,9 @@ import random
 import numpy as np
 from inspyred import ec, benchmarks
 from ga.ga_portfolio_optimization import GAPortfolioOptimization
-from pso.pso_portfolio_optimization import PSOPortfolioOptimization, repair_portfolio_pso
+from pso.pso_portfolio_optimization import PSOPortfolioOptimization
 from util.solution import Solution
+from util.repair_methods import REPAIR_METHODS_GA, REPAIR_METHODS_PSO, repair_normalize, repair_normalize_ga
 
 
 class PortfolioOptimization(benchmarks.Benchmark):
@@ -67,7 +68,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
         fitness = []
         for candidate in candidates:
             weights = np.array(candidate)
-            max_allocation = np.array(candidate, 0.1)
+            max_allocation = np.full_like(weights, 0.1)
 
             # Check constraints
             if not np.isclose(np.sum(weights), 1.0) or (weights < 0).any():
@@ -172,6 +173,12 @@ class PortfolioOptimization(benchmarks.Benchmark):
         Raises:
             ValueError: If an unsupported algorithm type is specified.
         """
+        repair_method_name = kwargs.get("repair_method", "normalize")
+        if algorithm_type == "ga":
+            repair = REPAIR_METHODS_GA.get(repair_method_name, repair_normalize_ga)
+        else:
+            repair = REPAIR_METHODS_PSO.get(repair_method_name, repair_normalize)
+
         match(algorithm_type):
             case "ga":
                 return self.__run_ga(
@@ -188,7 +195,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
                     num_elites=kwargs.get('num_elites', 1),
                     terminator=kwargs.get(
                         'terminator', ec.terminators.generation_termination),
-                    portfolio_repair=self.repair_method_v_a
+                    portfolio_repair=repair
                 )
             case "pso":
                 return self.__run_pso(
@@ -200,7 +207,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
                     w=kwargs.get('w', 0.7),
                     c1=kwargs.get('c1', 1.5),
                     c2=kwargs.get('c2', 1.5),
-                    portfolio_repair=repair_portfolio_pso
+                    portfolio_repair=repair
                 )
             case _:
                 raise ValueError(f"Algorithm {algorithm_type} doesn\'t exist")
@@ -229,7 +236,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
             Solution: Best solution found by the PSO algorithm.
         """
         pso = PSOPortfolioOptimization(
-            generator=lambda r: self.generator(r, None),
+            generator=lambda random, args: self.generator(random, args),
             evaluator=lambda w: np.sum(np.array(w) * self.sharpe_ratios),
             bounder=self.bounder,
             pop_size=kwargs.get('pop_size', 100),
@@ -237,6 +244,6 @@ class PortfolioOptimization(benchmarks.Benchmark):
             w=kwargs.get('w', 0.7),
             c1=kwargs.get('c1', 1.5),
             c2=kwargs.get('c2', 1.5),
-            portfolio_repair=repair_portfolio_pso
+            portfolio_repair=kwargs.get('portfolio_repair')
         )
         return pso.run(seed=kwargs.get('seed'))

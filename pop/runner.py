@@ -4,7 +4,7 @@ from typing import List
 from benchmarks.portfolio_optimization import PortfolioOptimization
 from dataset.dataset_manager import DatasetManager
 from util.solution import Solution
-
+from util.repair_methods import repair_normalize, repair_clipped_normalize, repair_random_restart
 
 def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_free_rate_annual: float, start_date: str, end_date: str, **kwargs) -> tuple[float, float, dict[str, float]]:
     dataset_manager: DatasetManager = DatasetManager(dataset_folder_name)
@@ -33,6 +33,19 @@ def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_fr
     problem: PortfolioOptimization = PortfolioOptimization(
         num_companies=num_companies, sharpe_ratios=sharpe_ratios.to_numpy())
 
-    solution: Solution = problem.optimize(algorithm_type, **kwargs)
+    solution: Solution = problem.optimize(
+        algorithm_type,
+        pop_size=kwargs.get("pop_size", 100),
+        max_generations=kwargs.get("max_generations", 300),
+        mutation_rate=kwargs.get("mutation_rate", 0.1),
+        gaussian_stdev=kwargs.get("gaussian_stdev", 0.1),
+        num_elites=kwargs.get("num_elites", 1),
+        w=kwargs.get("w", 0.5),
+        c1=kwargs.get("c1", 1.5),
+        c2=kwargs.get("c2", 2.0),
+        correlation_level=correlation_level,
+        repair_method=kwargs.get("repair_method", "normalize")
+    )
+
 
     return solution.decode(dataset_manager.get_full_companies_names(meta), annual_mean_returns)

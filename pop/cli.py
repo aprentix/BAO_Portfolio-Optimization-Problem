@@ -40,6 +40,16 @@ def parse_args():
     other_group = parser.add_argument_group("Other options")
     other_group.add_argument(
         "-l", "--level", choices=["low", "medium", "high"], help="Setup correlation level between companies", default=None)
+    
+    other_group.add_argument("--pop-size", type=int, help="Population size", default=100)
+    other_group.add_argument("--max-generations", type=int, help="Maximum number of generations or iterations", default=300)
+    other_group.add_argument("--mutation-rate", type=float, help="Mutation rate for GA", default=0.1)
+    other_group.add_argument("--gaussian-stdev", type=float, help="Standard deviation for Gaussian mutation in GA", default=0.1)
+    other_group.add_argument("--num-elites", type=int, help="Number of elite individuals in GA", default=1)
+    other_group.add_argument("--w", type=float, help="Inertia weight for PSO", default=0.5)
+    other_group.add_argument("--c1", type=float, help="Cognitive constant for PSO", default=1.5)
+    other_group.add_argument("--c2", type=float, help="Social constant for PSO", default=2.0)
+    other_group.add_argument("--repair-method", choices=["normalize", "clip", "restart"], default="normalize", help="Choose repair method for constraint handling")
 
     args = parser.parse_args()
 

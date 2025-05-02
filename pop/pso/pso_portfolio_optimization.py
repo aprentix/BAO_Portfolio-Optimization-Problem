@@ -1,27 +1,14 @@
-import numpy as np
+from inspyred import swarm
 from random import Random
+import numpy as np
 from util.solution import Solution
-
-
-def repair_portfolio_pso(weights, max_weight=0.10):
-    """
-    Repairs a portfolio weights vector by applying:
-    - No short-selling (weights >= 0)
-    - Max weight per asset
-    - Normalization so that sum(weights) == 1
-    """
-    weights = np.clip(weights, 0, max_weight)
-    total = np.sum(weights)
-    if total == 0:
-        weights = np.ones_like(weights) / len(weights)
-    else:
-        weights = weights / total
-    return weights
+from util.repair_methods import repair_normalize, repair_clipped_normalize, repair_random_restart
 
 
 class PSOPortfolioOptimization:
     """
-    A particle swarm optimization implementation for portfolio optimization problems.
+    A particle swarm optimization implementation for portfolio optimization problems
+    using the inspyred.swarm framework.
     """
 
     def __init__(self, **kwargs):
@@ -33,50 +20,44 @@ class PSOPortfolioOptimization:
         self.w = kwargs.get('w', 0.7)
         self.c1 = kwargs.get('c1', 1.5)
         self.c2 = kwargs.get('c2', 1.5)
-        self.portfolio_repair = kwargs.get('portfolio_repair', repair_portfolio_pso)
+        self.portfolio_repair = kwargs.get('portfolio_repair', repair_normalize)
         self.best_fitness_history = []
+
+    def history_observer(self, population, num_generations, num_evaluations, args):
+        """
+        Observer function to record the best fitness value in each generation.
+        """
+        best_fitness = max(population).fitness
+        self.best_fitness_history.append(best_fitness)
 
     def run(self, seed=None) -> Solution:
         rand = Random(seed)
 
-        # Initialize particles as numpy arrays
-        particles = [np.array(self.generator(rand)) for _ in range(self.pop_size)]
-        velocities = [np.zeros_like(p) for p in particles]
-        personal_best_positions = [np.copy(p) for p in particles]
-        personal_best_fitnesses = [self.evaluator(p) for p in particles]
+        pso = swarm.PSO(rand)
+        pso.topology = swarm.topologies.star_topology
+        pso.inertia = self.w
+        pso.cognitive_rate = self.c1
+        pso.social_rate = self.c2
+        pso.observer = self.history_observer
 
-        # Find initial global best
-        best_index = np.argmax(personal_best_fitnesses)
-        global_best_position = np.copy(personal_best_positions[best_index])
-        global_best_fitness = personal_best_fitnesses[best_index]
+        def wrapped_generator(random, args):
+            return self.generator(random, args)
 
-        for iteration in range(self.max_iterations):
-            for i in range(self.pop_size):
-                r1 = np.random.uniform(size=len(particles[i]))
-                r2 = np.random.uniform(size=len(particles[i]))
+        def wrapped_evaluator(candidates, args):
+            results = []
+            for c in candidates:
+                repaired = self.portfolio_repair(c, args)
+                results.append(self.evaluator(repaired))
+            return results
 
-                cognitive = self.c1 * r1 * (personal_best_positions[i] - particles[i])
-                social = self.c2 * r2 * (global_best_position - particles[i])
-                velocities[i] = self.w * velocities[i] + cognitive + social
+        final_pop = pso.evolve(
+            generator=wrapped_generator,
+            evaluator=wrapped_evaluator,
+            pop_size=self.pop_size,
+            maximize=True,
+            bounder=self.bounder,
+            max_generations=self.max_iterations
+        )
 
-                particles[i] = particles[i] + velocities[i]
-
-                if self.bounder:
-                    particles[i] = self.bounder(particles[i], None)
-
-                if self.portfolio_repair:
-                    particles[i] = self.portfolio_repair(particles[i])
-
-                fitness = self.evaluator(particles[i])
-
-                if fitness > personal_best_fitnesses[i]:
-                    personal_best_positions[i] = np.copy(particles[i])
-                    personal_best_fitnesses[i] = fitness
-
-                    if fitness > global_best_fitness:
-                        global_best_position = np.copy(particles[i])
-                        global_best_fitness = fitness
-
-            self.best_fitness_history.append(global_best_fitness)
-
-        return Solution(global_best_position.tolist(), global_best_fitness)
+        best = max(final_pop)
+        return Solution(best.candidate, best.fitness)
