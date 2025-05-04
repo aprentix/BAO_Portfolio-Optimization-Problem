@@ -7,6 +7,7 @@ idna==3.10
 numpy==2.2.4
 packaging==24.2
 pandas==2.2.3
+scipy==1.15.2
 PySocks==1.7.1
 python-dateutil==2.9.0.post0
 pytz==2025.2
