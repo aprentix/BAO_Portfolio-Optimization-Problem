@@ -1,10 +1,10 @@
 from pandas import DataFrame
 from typing import List
 
-from benchmarks.portfolio_optimization import PortfolioOptimization
-from dataset.dataset_manager import DatasetManager
-from util.solution import Solution
-from util.repair_methods import repair_normalize, repair_clipped_normalize, repair_random_restart
+from .benchmarks.portfolio_optimization import PortfolioOptimization
+from .dataset.dataset_manager import DatasetManager
+from .util.solution import Solution
+from .util.repair_methods import repair_normalize, repair_clipped_normalize, repair_random_restart
 
 def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_free_rate_annual: float, start_date: str, end_date: str, **kwargs) -> tuple[float, float, dict[str, float]]:
     dataset_manager: DatasetManager = DatasetManager(dataset_folder_name)
