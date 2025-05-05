@@ -5,7 +5,7 @@ import pandas as pd
 from scipy.stats import wilcoxon, ttest_ind
 from runner import runner
 from matplotlib.backends.backend_pdf import PdfPages
-from util.tuning_loader import load_best_config
+from .util.tuning_loader import load_best_config
 
 # Configuration
 NUM_RUNS = 30
