@@ -6,9 +6,10 @@
 - Lara Gerlach
 - Raquel Diaz Chavez
 
-## How run project
-You can use manage project script. Example:
-1. Setup project to run algorithms
+## How to run the project
+Use the project management script to set up and execute algorithms. 
+Walkthrough:
+1. Setup the Project
 ```bash
 python3 manager --setup
 ```
@@ -23,7 +24,7 @@ python3 manager -h
 python3 pop -t ga -n 25
 ```
 
-Other script's commands in help:
+3. To see optimization options:
 ```bash
 python3 pop --help
 ```
@@ -40,7 +41,7 @@ Traditional approaches like Markowitz's mean-variance optimization rely on restr
 
 ## Problem Definition
 
-While portfolio optimization encompasses numerous variables and options in real-world scenarios, we've implemented a simplified approach with specific metrics for feasibility.
+Portfolio optimization involves numerous variables, but our implementation focuses on a simplified yet effective approach.
 
 ### Constraints
 
