@@ -15,8 +15,8 @@ class ExperimentGenerator:
         Args:
             base_dir (str): The base directory for the project.
         """
-        self.base_dir = Path(base_dir)
-        self.dataset_dir = self.base_dir / "dataset" / "4-2-risk-free-rate" / "period-from-2015-01-01-to-2020-01-01"
+        self.base_dir = Path(base_dir).parent.parent  # Adjust to point to the root of the project
+        self.dataset_dir = Path(base_dir) / "dataset" / "4-2-risk-free-rate" / "period-from-2015-01-01-to-2020-01-01"
         self.correlation_file = self.dataset_dir / "correlation_companies.csv"
         self.experiments_dir = self.base_dir / "experiments" / "subdatasets"
 
