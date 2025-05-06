@@ -59,7 +59,7 @@ class GAExperimentExecutor:
             dict: Results of the experiment.
         """
         # Load financial data
-        returns, sharpe_ratios = self._load_data(config)
+        _, sharpe_ratios = self._load_data(config)
 
         # Configure GA
         ga = GAPortfolioOptimization(

@@ -1,11 +1,9 @@
-import random
 import numpy as np
 from inspyred import ec, benchmarks
 from ga.ga_portfolio_optimization import GAPortfolioOptimization
 from pso.pso_portfolio_optimization import PSOPortfolioOptimization
 from util.solution import Solution
-from util.repair_methods import REPAIR_METHODS_GA, REPAIR_METHODS_PSO, repair_normalize, repair_normalize_ga
-
+from util.repair_methods import REPAIR_METHODS_GA, REPAIR_METHODS_PSO
 
 class PortfolioOptimization(benchmarks.Benchmark):
     """
@@ -86,66 +84,6 @@ class PortfolioOptimization(benchmarks.Benchmark):
 
         return fitness
     
-    @classmethod
-    def repair_method_v_a(cls, random, candidates, args):
-        """
-        Repair operator that ensures portfolio allocations satisfy constraints.
-
-        This method modifies invalid portfolios to satisfy the following constraints:
-        1. All weights are non-negative
-        2. Weights sum to 1.0
-
-        Args:
-            random: Random number generator.
-            candidates: List of candidate portfolio allocations to repair.
-            args: Additional arguments.
-
-        Returns:
-            list: Repaired candidate portfolio allocations.
-        """
-        repaired = []
-        for candidate in candidates:
-            total = sum(candidate)
-            repaired.append([(x / total) for x in candidate])
-        return repaired
-    
-    @classmethod
-    def repair_method_v_b(cls, random, candidates, args):
-        """
-        Repair operator that ensures portfolio allocations satisfy constraints.
-
-        This method modifies invalid portfolios to satisfy the following constraints:
-        1. All weights are non-negative
-        2. Weights sum to 1.0
-
-        Args:
-            random: Random number generator.
-            candidates: List of candidate portfolio allocations to repair.
-            args: Additional arguments.
-
-        Returns:
-            list: Repaired candidate portfolio allocations.
-        """
-        repaired = []
-        for candidate in candidates:
-            arr = np.array(candidate, dtype=np.float64)
-            greater_than_zero = arr[arr > 0.0]
-            resto = 1 - greater_than_zero.sum()
-            result = np.copy(arr)
-            mask = arr > abs(resto) if resto < 0 else arr > 0
-
-            if resto < 0:
-                adjustment = abs(resto) / np.sum(mask)
-                result[mask] -= adjustment
-            else:
-                adjustment = abs(resto) / np.sum(mask)
-                result[mask] += adjustment
-
-            result = result / result.sum()
-        
-            repaired.append(result)
-        return repaired
-    
     def optimize(self, algorithm_type: str, **kwargs) -> Solution:
         """
         Execute the specified optimization algorithm to find optimal portfolio allocation.
@@ -174,11 +112,6 @@ class PortfolioOptimization(benchmarks.Benchmark):
             ValueError: If an unsupported algorithm type is specified.
         """
         repair_method_name = kwargs.get("repair_method", "normalize")
-        if algorithm_type == "ga":
-            repair = REPAIR_METHODS_GA.get(repair_method_name, repair_normalize_ga)
-        else:
-            repair = REPAIR_METHODS_PSO.get(repair_method_name, repair_normalize)
-
         match(algorithm_type):
             case "ga":
                 return self.__run_ga(
@@ -195,7 +128,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
                     num_elites=kwargs.get('num_elites', 1),
                     terminator=kwargs.get(
                         'terminator', ec.terminators.generation_termination),
-                    portfolio_repair=repair
+                    portfolio_repair=REPAIR_METHODS_GA.get(repair_method_name)
                 )
             case "pso":
                 return self.__run_pso(
@@ -207,7 +140,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
                     w=kwargs.get('w', 0.7),
                     c1=kwargs.get('c1', 1.5),
                     c2=kwargs.get('c2', 1.5),
-                    portfolio_repair=repair
+                    portfolio_repair=REPAIR_METHODS_PSO.get(repair_method_name)
                 )
             case _:
                 raise ValueError(f"Algorithm {algorithm_type} doesn\'t exist")
