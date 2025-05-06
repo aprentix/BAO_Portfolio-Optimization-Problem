@@ -2,7 +2,7 @@ import time
 import numpy as np
 import pandas as pd
 from itertools import product
-from runner import runner
+from pop.runner import runner
 
 NUM_RUNS = 30
 NUM_COMPANIES = 50
