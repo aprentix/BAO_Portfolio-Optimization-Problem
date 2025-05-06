@@ -2,7 +2,6 @@ from tqdm import tqdm
 import numpy as np
 from inspyred import ec
 from pop.pso.pso_portfolio_optimization import PSOPortfolioOptimization
-from pop.util.solution import Solution
 from pop.dataset.dataset_manager import DatasetManager
 from pop.util.repair_methods import REPAIR_METHODS_PSO
 
