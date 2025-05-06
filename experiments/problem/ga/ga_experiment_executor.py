@@ -2,7 +2,6 @@ from tqdm import tqdm
 import numpy as np
 from inspyred import ec
 from pop.ga.ga_portfolio_optimization import GAPortfolioOptimization
-from pop.util.solution import Solution
 from pop.dataset.dataset_manager import DatasetManager
 from pop.util.repair_methods import REPAIR_METHODS_GA
 
@@ -14,25 +13,6 @@ class GAExperimentExecutor:
     def __init__(self, dataset_manager: DatasetManager):
         self.dataset_manager = dataset_manager
         self.results = []
-
-    def _load_data(self, config: dict):
-        """
-        Load financial data required for the experiment.
-
-        Args:
-            config (dict): Experiment configuration.
-
-        Returns:
-            tuple: Returns (returns, sharpe_ratios) as numpy arrays.
-        """
-        # Use the dataset manager to load the dataset
-        dataset = self.dataset_manager.load_dataset(config['dataset_name'])
-
-        # Extract returns and Sharpe ratios
-        returns = dataset['Mean Excess Return'].values
-        sharpe_ratios = dataset['Sharpe Ratio'].values
-
-        return returns, sharpe_ratios
 
     def run_repeated_experiment(self, experiment: dict, num_runs: int):
         """

@@ -32,7 +32,7 @@ pop = "pop.__main__:main"
 manager = "manager.__main__:main"
 
 [tool.setuptools]
-packages = ["pop"]
+packages = ["pop", "experiments"]
 
 [tool.setuptools.package-data]
 pop = ["**/*.py", "**/*.json"]
