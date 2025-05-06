@@ -1,9 +1,9 @@
 from pandas import DataFrame
 from typing import List
 
-from .portfolio_optimization import PortfolioOptimization
-from .dataset.dataset_manager import DatasetManager
-from .util.solution import Solution
+from pop.portfolio_optimization import PortfolioOptimization
+from pop.dataset.dataset_manager import DatasetManager
+from pop.util.solution import Solution
 
 def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_free_rate_annual: float, start_date: str, end_date: str, **kwargs) -> tuple[float, float, dict[str, float]]:
     dataset_manager: DatasetManager = DatasetManager(dataset_folder_name)

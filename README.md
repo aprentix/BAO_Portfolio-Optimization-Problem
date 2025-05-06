@@ -21,12 +21,12 @@ python3 manager -h
 
 2. Optimize portfolio
 ```bash
-python3 pop -t ga -n 25
+python3 -m pop -t ga -n 25
 ```
 
 3. To see optimization options:
 ```bash
-python3 pop --help
+python3 -m pop --help
 ```
 
 ## Background

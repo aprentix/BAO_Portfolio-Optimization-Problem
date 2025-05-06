@@ -1,9 +1,9 @@
 import numpy as np
 from inspyred import ec, benchmarks
-from .ga.ga_portfolio_optimization import GAPortfolioOptimization
-from .pso.pso_portfolio_optimization import PSOPortfolioOptimization
-from .util.solution import Solution
-from .util.repair_methods import REPAIR_METHODS_GA, REPAIR_METHODS_PSO
+from pop.ga.ga_portfolio_optimization import GAPortfolioOptimization
+from pop.pso.pso_portfolio_optimization import PSOPortfolioOptimization
+from pop.util.solution import Solution
+from pop.util.repair_methods import REPAIR_METHODS_GA, REPAIR_METHODS_PSO
 
 class PortfolioOptimization(benchmarks.Benchmark):
     """
