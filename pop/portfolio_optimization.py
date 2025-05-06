@@ -1,9 +1,9 @@
 import numpy as np
 from inspyred import ec, benchmarks
-from ga.ga_portfolio_optimization import GAPortfolioOptimization
-from pso.pso_portfolio_optimization import PSOPortfolioOptimization
-from util.solution import Solution
-from util.repair_methods import REPAIR_METHODS_GA, REPAIR_METHODS_PSO
+from .ga.ga_portfolio_optimization import GAPortfolioOptimization
+from .pso.pso_portfolio_optimization import PSOPortfolioOptimization
+from .util.solution import Solution
+from .util.repair_methods import REPAIR_METHODS_GA, REPAIR_METHODS_PSO
 
 class PortfolioOptimization(benchmarks.Benchmark):
     """
@@ -49,7 +49,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
         total = sum(weights)
         return [w / total for w in weights]
 
-    def evaluator(self, candidates, args):
+    def evaluator(self, candidates, *args):
         """
         Evaluate the fitness of candidate portfolio allocations based on Sharpe ratio.
 

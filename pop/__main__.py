@@ -7,8 +7,8 @@ This problem is crucial for both institutional investors managing billions of do
 
 import sys
 
-from cli import parse_args
-from runner import runner
+from .cli import parse_args
+from .runner import runner
 
 
 def main():
