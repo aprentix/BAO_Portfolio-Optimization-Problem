@@ -38,6 +38,24 @@ class DatasetManager:
         """
         self.dataset_dir = os.path.join(os.getcwd(), dir_name)
 
+    def load_dataset(self, dataset_name: str) -> pd.DataFrame:
+        """
+        Load a dataset by name.
+
+        Args:
+            dataset_name (str): Name of the dataset file (without extension).
+
+        Returns:
+            pd.DataFrame: Loaded dataset as a Pandas DataFrame.
+        """
+        dataset_file = Path(self.dataset_dir) / f"{dataset_name}.csv"
+        if not dataset_file.exists():
+            raise FileNotFoundError(f"Dataset file {dataset_file} does not exist.")
+        
+        # Load the dataset
+        dataset = pd.read_csv(dataset_file)
+        return dataset
+
     def read_annual_resume(self, risk_free_rate_annual: float, start_date: str, end_date: str,
                            n_companies: Optional[int] = None, **kwargs) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list[str]]:
         """

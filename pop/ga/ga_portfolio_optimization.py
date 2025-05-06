@@ -12,7 +12,6 @@ class GAPortfolioOptimization:
     - Default parameter values
     - Proper constraint handling
     - Adaptive mutation rates
-    - Population diversity preservation
     - Input validation
     """
 
@@ -80,7 +79,6 @@ class GAPortfolioOptimization:
         ga.selector = self.selector
         ga.replacer = ec.replacers.generational_replacement
         ga.maintainer = self.portfolio_repair  # Proper constraint handling
-        ga.diversity = ec.diversity.crowding_diversity  # Diversity preservation
         
         # Configure variation operators
         ga.variator = [

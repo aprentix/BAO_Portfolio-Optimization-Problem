@@ -81,7 +81,7 @@ class PSOPortfolioOptimization:
         # Configure PSO components
         pso = swarm.PSO(rand)
         pso.topology = swarm.topologies.star_topology
-        pso.terminator = swarm.terminators.generation_termination
+        pso.terminator = ec.terminators.generation_termination
         pso.observer = self.history_observer
         
         # Configure PSO parameters
@@ -99,6 +99,12 @@ class PSOPortfolioOptimization:
             repaired = [self.portfolio_repair(c, args) for c in candidates]
             return [self.evaluator(c) for c in repaired]
 
+        # Determine the number of variables (dimensions)
+        if hasattr(self.bounder, 'lower_bound') and hasattr(self.bounder.lower_bound, '__len__'):
+            num_variables = len(self.bounder.lower_bound)
+        else:
+            raise ValueError("Bounder must have a 'lower_bound' attribute with a defined length.")
+
         # Evolve swarm
         final_pop = pso.evolve(
             generator=wrapped_generator,
@@ -107,7 +113,7 @@ class PSOPortfolioOptimization:
             maximize=True,
             bounder=self.bounder,
             max_generations=self.max_iterations,
-            num_variables=self.bounder.upper.size,  # Auto-detect dimension
+            num_variables=num_variables,  # Correctly set the number of variables
             # Additional parameters
             velocity_clamp=self.velocity_clamp,
             neighborhood_size=int(self.pop_size * 0.2)

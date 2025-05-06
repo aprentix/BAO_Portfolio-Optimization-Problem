@@ -4,6 +4,7 @@ from inspyred import ec
 from pop.ga.ga_portfolio_optimization import GAPortfolioOptimization
 from pop.util.solution import Solution
 from pop.dataset.dataset_manager import DatasetManager
+from pop.util.repair_methods import REPAIR_METHODS_GA
 
 class GAExperimentExecutor:
     """
@@ -28,8 +29,8 @@ class GAExperimentExecutor:
         dataset = self.dataset_manager.load_dataset(config['dataset_name'])
 
         # Extract returns and Sharpe ratios
-        returns = dataset['returns'].values
-        sharpe_ratios = dataset['sharpe_ratios'].values
+        returns = dataset['Mean Excess Return'].values
+        sharpe_ratios = dataset['Sharpe Ratio'].values
 
         return returns, sharpe_ratios
 
@@ -88,7 +89,7 @@ class GAExperimentExecutor:
             pop_size=config['pop_size'],
             max_generations=config['max_generations'],
             mutation_rate=config['mutation_rate'],
-            repair_method=Solution.REPAIR_METHODS_GA[config['repair_method']],
+            repair_method=REPAIR_METHODS_GA[config['repair_method']],  # Use REPAIR_METHODS_GA directly
             tournament_size=config.get('tournament_size', 3),
             num_elites=config.get('num_elites', 1)
         )
@@ -101,5 +102,20 @@ class GAExperimentExecutor:
             'seed': seed,
             'sharpe_ratio': solution.fitness,
             'convergence_history': ga.best_fitness_history,
-            'best_weights': solution.candidate
         }
+    
+    def _weight_generator(self, random, args):
+        """
+        Generate random weights for the portfolio.
+
+        Args:
+            random: Random number generator.
+            args: Additional arguments.
+
+        Returns:
+            list: A list of weights summing to 1.
+        """
+        num_assets = args.get('num_assets', 10)  # Default to 10 assets if not specified
+        weights = [random.uniform(0, 1) for _ in range(num_assets)]
+        total = sum(weights)
+        return [w / total for w in weights]
