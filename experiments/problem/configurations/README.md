@@ -10,7 +10,8 @@ This folder contains configuration files for Genetic Algorithm (GA) and Particle
 ## Configuration Fields
 
 ### GA Configurations
-- `dataset_name`: Name of the dataset to use.
+- `num_assets`: Number of assets
+- `correlation_level`: Correlation level ["low", "medium", "high"]
 - `pop_size`: Population size.
 - `max_generations`: Maximum number of generations.
 - `mutation_rate`: Mutation rate.
@@ -19,7 +20,8 @@ This folder contains configuration files for Genetic Algorithm (GA) and Particle
 - `num_elites`: Number of elite individuals to retain.
 
 ### PSO Configurations
-- `dataset_name`: Name of the dataset to use.
+- `num_assets`: Number of assets
+- `correlation_level`: Correlation level ["low", "medium", "high"]
 - `pop_size`: Population size.
 - `max_iterations`: Maximum number of iterations.
 - `inertia_weight`: Inertia weight for velocity updates.
