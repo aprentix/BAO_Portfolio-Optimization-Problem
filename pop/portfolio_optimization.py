@@ -130,7 +130,8 @@ class PortfolioOptimization(benchmarks.Benchmark):
                     num_elites=kwargs.get('num_elites', 1),
                     terminator=kwargs.get(
                         'terminator', ec.terminators.generation_termination),
-                    portfolio_repair=REPAIR_METHODS_GA.get(repair_method_name)
+                    portfolio_repair=REPAIR_METHODS_GA.get(repair_method_name),
+                    **kwargs
                 )
             case "pso":
                 return self.__run_pso(
@@ -142,7 +143,8 @@ class PortfolioOptimization(benchmarks.Benchmark):
                     w=kwargs.get('w', 0.7),
                     c1=kwargs.get('c1', 1.5),
                     c2=kwargs.get('c2', 1.5),
-                    portfolio_repair=REPAIR_METHODS_PSO.get(repair_method_name)
+                    portfolio_repair=REPAIR_METHODS_PSO.get(repair_method_name),
+                    **kwargs
                 )
             case _:
                 raise ValueError(f"Algorithm {algorithm_type} doesn\'t exist")
