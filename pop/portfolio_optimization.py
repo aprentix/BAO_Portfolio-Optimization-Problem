@@ -29,12 +29,12 @@ class PortfolioOptimization(benchmarks.Benchmark):
             sharpe_ratios (np.array): Array of Sharpe ratios for each asset.
         """
         super().__init__(num_companies)
-        self.num_companies = num_companies
-        self.sharpe_ratios = sharpe_ratios
-        self.bounder = ec.Bounder(
+        self._num_companies = num_companies
+        self._sharpe_ratios = sharpe_ratios
+        self._bounder = ec.Bounder(
             [0.0] * num_companies, [1.0] * num_companies)
         
-        self.last_report: dict | None = None
+        self._report: dict | None = None
 
     def generator(self, random, args):
         """
@@ -47,7 +47,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
         Returns:
             list: A list of normalized random weights that sum to 1.
         """
-        weights = [random.random() for _ in range(self.num_companies)]
+        weights = [random.random() for _ in range(self._num_companies)]
         total = sum(weights)
         return [w / total for w in weights]
 
@@ -81,7 +81,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
                 continue
 
             # Sharpe ratio
-            portfolio_sharpe_ratio = np.sum(self.sharpe_ratios * weights)
+            portfolio_sharpe_ratio = np.sum(self._sharpe_ratios * weights)
             fitness.append(portfolio_sharpe_ratio)
 
         return fitness
@@ -119,7 +119,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
                 return self.__run_ga(
                     generator=self.generator,
                     evaluator=self.evaluator,
-                    bounder=self.bounder,
+                    bounder=self._bounder,
                     pop_size=kwargs.get('pop_size', 100),
                     max_generations=kwargs.get('max_generations', 100),
                     selector=kwargs.get(
@@ -137,7 +137,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
                 return self.__run_pso(
                     generator=self.generator,
                     evaluator=self.evaluator,
-                    bounder=self.bounder,
+                    bounder=self._bounder,
                     pop_size=kwargs.get('pop_size', 100),
                     max_generations=kwargs.get('max_generations', 100),
                     w=kwargs.get('w', 0.7),
@@ -161,7 +161,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
         """
         ga = GAPortfolioOptimization(**kwargs)
         sol: Solution = ga.run(seed=kwargs.get('seed'))
-        self.last_report = ga.convergence_report
+        self._report = ga.report
         return sol
 
     def __run_pso(self, **kwargs) -> Solution:
@@ -176,9 +176,9 @@ class PortfolioOptimization(benchmarks.Benchmark):
         """
         pso = PSOPortfolioOptimization(**kwargs)
         sol: Solution = pso.run(seed=kwargs.get('seed'))
-        self.last_report = pso.convergence_report
+        self._report = pso.report
         return sol
     
     @property
-    def last_report(self) -> dict | None:
-        return self.last_report
+    def report(self) -> dict | None:
+        return self._report

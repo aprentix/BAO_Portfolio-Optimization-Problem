@@ -124,12 +124,9 @@ class GAPortfolioOptimization:
         return Solution(best.candidate, best.fitness)
 
     @property
-    def convergence_report(self):
-        """Generate convergence analysis report"""
+    def report(self):
+        """Generate report"""
         return {
             'generations': self.current_generation,
-            'final_fitness': self.best_fitness_history[-1],
-            'improvement': self.best_fitness_history[-1] - self.best_fitness_history[0],
-            'stagnation': len(self.best_fitness_history) - np.argmax(self.best_fitness_history),
             'fitness_history': self.best_fitness_history
         }

@@ -129,14 +129,10 @@ class PSOPortfolioOptimization:
         return Solution(best.candidate, best.fitness)
 
     @property
-    def convergence_report(self):
-        """Generate swarm analysis report"""
+    def report(self) -> dict:
+        """Generate analysis report"""
         return {
             'iterations': self.current_iteration,
-            'final_fitness': self.best_fitness_history[-1],
-            'final_diversity': self.diversity_history[-1],
-            'max_fitness': max(self.best_fitness_history),
-            'avg_iteration_time': np.mean(np.diff(self.best_fitness_history)),
             'fitness_history': self.best_fitness_history,
             'diversity_history': self.diversity_history
         }

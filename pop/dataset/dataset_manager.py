@@ -36,7 +36,7 @@ class DatasetManager:
             dir_name (str): The name of the directory containing the datasets,
                            relative to the current working directory.
         """
-        self.dataset_dir = os.path.join(os.getcwd(), dir_name)
+        self._dataset_dir = os.path.join(os.getcwd(), dir_name)
 
     def read_annual_resume(self, risk_free_rate_annual: float, start_date: str, end_date: str,
                            n_companies: Optional[int] = None, **kwargs) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, list[str]]:
@@ -179,7 +179,7 @@ class DatasetManager:
             FileNotFoundError: If the symbols metadata file does not exist.
             KeyError: If any of the requested symbols are not found in the metadata.
         """
-        symbols_path = os.path.join(self.dataset_dir, "symbols_valid_meta.csv")
+        symbols_path = os.path.join(self._dataset_dir, "symbols_valid_meta.csv")
 
         self.__is_valid_path(symbols_path)
 
@@ -211,7 +211,7 @@ class DatasetManager:
         rfr_folder_name = f"{risk_free_rate_annual*100:.1f}".replace(
             ".", "-") + "-risk-free-rate"
 
-        rfr_folder_path = os.path.join(self.dataset_dir, rfr_folder_name)
+        rfr_folder_path = os.path.join(self._dataset_dir, rfr_folder_name)
 
         self.__is_valid_path(rfr_folder_path)
 
