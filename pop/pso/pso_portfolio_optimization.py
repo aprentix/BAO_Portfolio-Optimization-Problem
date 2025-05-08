@@ -4,10 +4,11 @@ import numpy as np
 from pop.util.solution import Solution
 from pop.util.repair_methods import REPAIR_METHODS_PSO
 
+
 class PSOPortfolioOptimization:
     """
     Particle Swarm Optimization for Portfolio Optimization
-    
+
     Features:
     - Adaptive inertia weight
     - Velocity clamping
@@ -26,13 +27,14 @@ class PSOPortfolioOptimization:
         self.c2 = kwargs.get('c2', 1.5)
         self.velocity_clamp = kwargs.get('velocity_clamp', 0.5)
         self.adaptive_inertia = kwargs.get('adaptive_inertia', True)
-        
+
         # Portfolio-specific parameters
         self.generator = kwargs.get('generator', self.default_generator)
         self.evaluator = kwargs.get('evaluator')
         self.bounder = kwargs.get('bounder', ec.Bounder(0, 1))
-        self.portfolio_repair = kwargs.get('portfolio_repair', REPAIR_METHODS_PSO['normalize'])
-        
+        self.portfolio_repair = kwargs.get(
+            'portfolio_repair', REPAIR_METHODS_PSO['normalize'])
+
         # State tracking
         self.best_fitness_history = []
         self.diversity_history = []
@@ -47,11 +49,13 @@ class PSOPortfolioOptimization:
         if not 0 <= self.w <= 2:
             raise ValueError("Inertia weight (w) should be between 0 and 2")
         if not 0 <= self.c1 <= 4 or not 0 <= self.c2 <= 4:
-            raise ValueError("Cognitive and social coefficients should be between 0 and 4")
+            raise ValueError(
+                "Cognitive and social coefficients should be between 0 and 4")
 
     def default_generator(self, random, args):
         """Generate valid initial portfolio weights"""
-        weights = np.array([random.random() for _ in range(args.get('num_assets', 10))])
+        weights = np.array([random.random()
+                           for _ in range(args.get('num_assets', 10))])
         return self.portfolio_repair(weights, args).tolist()
 
     def history_observer(self, population, num_generations, num_evaluations, args):
@@ -59,11 +63,11 @@ class PSOPortfolioOptimization:
         best = max(population)
         self.best_fitness_history.append(best.fitness)
         self.current_iteration = num_generations
-        
+
         # Track population diversity
         positions = np.array([p.candidate for p in population])
         self.diversity_history.append(np.mean(np.std(positions, axis=0)))
-        
+
         # Adapt inertia weight
         if self.adaptive_inertia:
             self.w = self._adapt_inertia(num_generations)
@@ -77,13 +81,13 @@ class PSOPortfolioOptimization:
     def run(self, seed=None) -> Solution:
         """Execute PSO with constraint handling"""
         rand = Random(seed)
-        
+
         # Configure PSO components
         pso = swarm.PSO(rand)
         pso.topology = swarm.topologies.star_topology
         pso.terminator = ec.terminators.generation_termination
         pso.observer = self.history_observer
-        
+
         # Configure PSO parameters
         pso.inertia = self.w
         pso.cognitive_rate = self.c1
@@ -103,7 +107,8 @@ class PSOPortfolioOptimization:
         if hasattr(self.bounder, 'lower_bound') and hasattr(self.bounder.lower_bound, '__len__'):
             num_variables = len(self.bounder.lower_bound)
         else:
-            raise ValueError("Bounder must have a 'lower_bound' attribute with a defined length.")
+            raise ValueError(
+                "Bounder must have a 'lower_bound' attribute with a defined length.")
 
         # Evolve swarm
         final_pop = pso.evolve(
@@ -131,5 +136,7 @@ class PSOPortfolioOptimization:
             'final_fitness': self.best_fitness_history[-1],
             'final_diversity': self.diversity_history[-1],
             'max_fitness': max(self.best_fitness_history),
-            'avg_iteration_time': np.mean(np.diff(self.best_fitness_history))
+            'avg_iteration_time': np.mean(np.diff(self.best_fitness_history)),
+            'fitness_history': self.best_fitness_history,
+            'diversity_history': self.diversity_history
         }

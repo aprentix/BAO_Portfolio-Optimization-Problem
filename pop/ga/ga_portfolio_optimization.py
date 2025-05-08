@@ -4,10 +4,11 @@ import numpy as np
 from pop.util.solution import Solution
 from pop.util.repair_methods import REPAIR_METHODS_GA
 
+
 class GAPortfolioOptimization:
     """
     Genetic Algorithm for Portfolio Optimization
-    
+
     Features:
     - Default parameter values
     - Proper constraint handling
@@ -26,15 +27,18 @@ class GAPortfolioOptimization:
         self.gaussian_stdev = kwargs.get('gaussian_stdev', 0.1)
         self.tournament_size = kwargs.get('tournament_size', 3)
         self.num_elites = kwargs.get('num_elites', 1)
-        self.selector = kwargs.get('selector', ec.selectors.tournament_selection)
-        self.terminator = kwargs.get('terminator', ec.terminators.generation_termination)
-        
+        self.selector = kwargs.get(
+            'selector', ec.selectors.tournament_selection)
+        self.terminator = kwargs.get(
+            'terminator', ec.terminators.generation_termination)
+
         # Portfolio-specific parameters
         self.generator = kwargs.get('generator', self.default_generator)
         self.evaluator = kwargs.get('evaluator')
         self.bounder = kwargs.get('bounder', ec.Bounder(0, 1))
-        self.portfolio_repair = kwargs.get('portfolio_repair', REPAIR_METHODS_GA['normalize'])
-        
+        self.portfolio_repair = kwargs.get(
+            'portfolio_repair', REPAIR_METHODS_GA['normalize'])
+
         # State tracking
         self.best_fitness_history = []
         self.current_generation = 0
@@ -60,7 +64,7 @@ class GAPortfolioOptimization:
         best = max(population)
         self.best_fitness_history.append(best.fitness)
         self.current_generation = num_generations
-        
+
         # Adapt mutation rate
         self.mutation_rate = self._adapt_mutation_rate(num_generations)
 
@@ -71,7 +75,7 @@ class GAPortfolioOptimization:
     def run(self, seed=None) -> Solution:
         """Execute GA with constraint handling"""
         rand = Random(seed)
-        
+
         # Configure GA components
         ga = ec.GA(rand)
         ga.terminator = self.terminator
@@ -79,7 +83,7 @@ class GAPortfolioOptimization:
         ga.selector = self.selector
         ga.replacer = ec.replacers.generational_replacement
         ga.maintainer = self.portfolio_repair  # Proper constraint handling
-        
+
         # Configure variation operators
         ga.variator = [
             ec.variators.blend_crossover,
@@ -126,5 +130,6 @@ class GAPortfolioOptimization:
             'generations': self.current_generation,
             'final_fitness': self.best_fitness_history[-1],
             'improvement': self.best_fitness_history[-1] - self.best_fitness_history[0],
-            'stagnation': len(self.best_fitness_history) - np.argmax(self.best_fitness_history)
+            'stagnation': len(self.best_fitness_history) - np.argmax(self.best_fitness_history),
+            'fitness_history': self.best_fitness_history
         }

@@ -33,6 +33,8 @@ class PortfolioOptimization(benchmarks.Benchmark):
         self.sharpe_ratios = sharpe_ratios
         self.bounder = ec.Bounder(
             [0.0] * num_companies, [1.0] * num_companies)
+        
+        self.last_report: dict | None = None
 
     def generator(self, random, args):
         """
@@ -156,7 +158,9 @@ class PortfolioOptimization(benchmarks.Benchmark):
             Solution: Best solution found by the genetic algorithm.
         """
         ga = GAPortfolioOptimization(**kwargs)
-        return ga.run(seed=kwargs.get('seed'))
+        sol: Solution = ga.run(seed=kwargs.get('seed'))
+        self.last_report = ga.convergence_report
+        return sol
 
     def __run_pso(self, **kwargs) -> Solution:
         """
@@ -168,15 +172,11 @@ class PortfolioOptimization(benchmarks.Benchmark):
         Returns:
             Solution: Best solution found by the PSO algorithm.
         """
-        pso = PSOPortfolioOptimization(
-            generator=lambda random, args: self.generator(random, args),
-            evaluator=lambda w: np.sum(np.array(w) * self.sharpe_ratios),
-            bounder=self.bounder,
-            pop_size=kwargs.get('pop_size', 100),
-            max_iterations=kwargs.get('max_generations', 100),
-            w=kwargs.get('w', 0.7),
-            c1=kwargs.get('c1', 1.5),
-            c2=kwargs.get('c2', 1.5),
-            portfolio_repair=kwargs.get('portfolio_repair')
-        )
-        return pso.run(seed=kwargs.get('seed'))
+        pso = PSOPortfolioOptimization(**kwargs)
+        sol: Solution = pso.run(seed=kwargs.get('seed'))
+        self.last_report = pso.convergence_report
+        return sol
+    
+    @property
+    def last_report(self) -> dict | None:
+        return self.last_report

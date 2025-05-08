@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from tqdm import tqdm
-import numpy as np
 from pop.dataset.dataset_manager import DatasetManager
 
 class ExperimentExecutor(ABC):
@@ -11,41 +10,6 @@ class ExperimentExecutor(ABC):
     def __init__(self, dataset_manager: DatasetManager):
         self.dataset_manager = dataset_manager
         self.results = []
-
-    def _load_data(self, config: dict):
-        """
-        Load financial data required for the experiment.
-
-        Args:
-            config (dict): Experiment configuration.
-
-        Returns:
-            tuple: Returns (returns, sharpe_ratios) as numpy arrays.
-        """
-        # Use the dataset manager to load the dataset
-        dataset = self.dataset_manager.load_dataset(config['dataset_name'])
-
-        # Extract returns and Sharpe ratios
-        returns = dataset['Mean Excess Return'].values
-        sharpe_ratios = dataset['Sharpe Ratio'].values
-
-        return returns, sharpe_ratios
-
-    def _weight_generator(self, random, args):
-        """
-        Generate random weights for the portfolio.
-
-        Args:
-            random: Random number generator.
-            args: Additional arguments.
-
-        Returns:
-            list: A list of weights summing to 1.
-        """
-        num_assets = args.get('num_assets', 10)  # Default to 10 assets if not specified
-        weights = [random.uniform(0, 1) for _ in range(num_assets)]
-        total = sum(weights)
-        return [w / total for w in weights]
 
     @abstractmethod
     def run_single_experiment(self, config: dict, seed: int) -> dict:
