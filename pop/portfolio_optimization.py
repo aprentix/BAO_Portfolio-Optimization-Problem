@@ -1,7 +1,7 @@
 import numpy as np
 from inspyred import ec, benchmarks
-from pop.ga.ga_portfolio_optimization import GAPortfolioOptimization
-from pop.pso.pso_portfolio_optimization import PSOPortfolioOptimization
+from pop.algorithms import GAPortfolioOptimization
+from pop.algorithms.pso_portfolio_optimization import PSOPortfolioOptimization
 from pop.util.solution import Solution
 from pop.util.repair_methods import REPAIR_METHODS_GA, REPAIR_METHODS_PSO
 

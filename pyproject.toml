@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "pop"
-version = "0.0.0"
+version = "1.0.0"
 description = "Portfolio optimization is a fundamental challenge in investment management, focusing on allocating capital among assets to maximize returns while minimizing risk. This problem is crucial for both institutional investors managing billions of dollars and individuals growing their savings."
 readme = "README.md"
 requires-python = ">=3.6"
@@ -29,7 +29,6 @@ classifiers = [
 
 [project.scripts]
 pop = "pop.__main__:main"
-manager = "manager.__main__:main"
 
 [tool.setuptools]
 packages = ["pop", "experiments"]
