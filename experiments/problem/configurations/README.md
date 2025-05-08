@@ -11,7 +11,7 @@ This folder contains configuration files for Genetic Algorithm (GA) and Particle
 
 ### GA Configurations
 - `num_assets`: Number of assets
-- `correlation_level`: Correlation level ["low", "medium", "high"]
+- `correlation_level`: Correlation level ["low", "medium", "high", "None"]
 - `pop_size`: Population size.
 - `max_generations`: Maximum number of generations.
 - `mutation_rate`: Mutation rate.
@@ -21,7 +21,7 @@ This folder contains configuration files for Genetic Algorithm (GA) and Particle
 
 ### PSO Configurations
 - `num_assets`: Number of assets
-- `correlation_level`: Correlation level ["low", "medium", "high"]
+- `correlation_level`: Correlation level ["low", "medium", "high", "None"]
 - `pop_size`: Population size.
 - `max_iterations`: Maximum number of iterations.
 - `inertia_weight`: Inertia weight for velocity updates.
