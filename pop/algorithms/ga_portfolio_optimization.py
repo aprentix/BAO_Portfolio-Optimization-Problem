@@ -1,6 +1,6 @@
 from inspyred import ec
+from inspyred.ec import Individual
 from random import Random
-import numpy as np
 from pop.util.solution import Solution
 from pop.util.repair_methods import REPAIR_METHODS_GA
 
@@ -120,7 +120,7 @@ class GAPortfolioOptimization:
         )
 
         # Return best solution
-        best = max(final_pop)
+        best: Individual = max(final_pop)
         return Solution(best.candidate, best.fitness)
 
     @property

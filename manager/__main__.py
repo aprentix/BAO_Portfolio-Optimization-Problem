@@ -140,6 +140,7 @@ def main():
     """Main function that handles command line arguments."""
 
     parser = argparse.ArgumentParser(
+        prog="manager",
         description="Project management script.",
         epilog="Example: %(prog)s --help"
     )

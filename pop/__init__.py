@@ -5,6 +5,7 @@ Portfolio optimization is a fundamental challenge in investment management, focu
 This problem is crucial for both institutional investors managing billions of dollars and individuals growing their savings.
 
 """
+__version__ = "1.0.0"
 
 from pop.portfolio_optimization import PortfolioOptimization
 from pop.runner import runner

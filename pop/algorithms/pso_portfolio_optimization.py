@@ -20,7 +20,7 @@ class PSOPortfolioOptimization:
 
     def __init__(self, **kwargs):
         # Set default parameters with validation
-        self.pop_size = kwargs.get('pop_size', 100)
+        self.swarm_size = kwargs.get('swarm_size', 100)
         self.max_iterations = kwargs.get('max_iterations', 200)
         self.w = kwargs.get('w', 0.7)
         self.c1 = kwargs.get('c1', 1.5)
@@ -44,7 +44,7 @@ class PSOPortfolioOptimization:
 
     def _validate_parameters(self):
         """Ensure parameters are within valid ranges"""
-        if self.pop_size < 5:
+        if self.swarm_size < 5:
             raise ValueError("Population size must be at least 5")
         if not 0 <= self.w <= 2:
             raise ValueError("Inertia weight (w) should be between 0 and 2")
@@ -114,14 +114,14 @@ class PSOPortfolioOptimization:
         final_pop = pso.evolve(
             generator=wrapped_generator,
             evaluator=wrapped_evaluator,
-            pop_size=self.pop_size,
+            pop_size=self.swarm_size,
             maximize=True,
             bounder=self.bounder,
             max_generations=self.max_iterations,
             num_variables=num_variables,  # Correctly set the number of variables
             # Additional parameters
             velocity_clamp=self.velocity_clamp,
-            neighborhood_size=int(self.pop_size * 0.2)
+            neighborhood_size=int(self.swarm_size * 0.2)
         )
 
         # Return best solution

@@ -113,22 +113,22 @@ class PortfolioOptimization(benchmarks.Benchmark):
         Raises:
             ValueError: If an unsupported algorithm type is specified.
         """
-        repair_method_name = kwargs.get("repair_method", "normalize")
+        repair_method_name = kwargs.pop("repair_method", "normalize")
         match(algorithm_type):
             case "ga":
                 return self.__run_ga(
                     generator=self.generator,
                     evaluator=self.evaluator,
                     bounder=self._bounder,
-                    pop_size=kwargs.get('pop_size', 100),
-                    max_generations=kwargs.get('max_generations', 100),
-                    selector=kwargs.get(
+                    pop_size=kwargs.pop('pop_size', 100),
+                    max_generations=kwargs.pop('max_generations', 100),
+                    selector=kwargs.pop(
                         'selector', ec.selectors.tournament_selection),
-                    tournament_size=kwargs.get('tournament_size', 2),
-                    mutation_rate=kwargs.get('mutation_rate', 0.1),
-                    gaussian_stdev=kwargs.get('gaussian_stdev', 0.1),
-                    num_elites=kwargs.get('num_elites', 1),
-                    terminator=kwargs.get(
+                    tournament_size=kwargs.pop('tournament_size', 2),
+                    mutation_rate=kwargs.pop('mutation_rate', 0.1),
+                    gaussian_stdev=kwargs.pop('gaussian_stdev', 0.1),
+                    num_elites=kwargs.pop('num_elites', 1),
+                    terminator=kwargs.pop(
                         'terminator', ec.terminators.generation_termination),
                     portfolio_repair=REPAIR_METHODS_GA.get(repair_method_name),
                     **kwargs
@@ -138,11 +138,11 @@ class PortfolioOptimization(benchmarks.Benchmark):
                     generator=self.generator,
                     evaluator=self.evaluator,
                     bounder=self._bounder,
-                    pop_size=kwargs.get('pop_size', 100),
-                    max_generations=kwargs.get('max_generations', 100),
-                    w=kwargs.get('w', 0.7),
-                    c1=kwargs.get('c1', 1.5),
-                    c2=kwargs.get('c2', 1.5),
+                    swarm_size=kwargs.pop('swarm_size', 100),
+                    max_iterations=kwargs.pop('max_iterations', 100),
+                    w=kwargs.pop('w', 0.7),
+                    c1=kwargs.pop('c1', 1.5),
+                    c2=kwargs.pop('c2', 1.5),
                     portfolio_repair=REPAIR_METHODS_PSO.get(repair_method_name),
                     **kwargs
                 )

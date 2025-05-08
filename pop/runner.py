@@ -8,7 +8,7 @@ from pop.util.solution import Solution
 def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_free_rate_annual: float, start_date: str, end_date: str, **kwargs) -> tuple[float, float, dict[str, float]]:
     dataset_manager: DatasetManager = DatasetManager(dataset_folder_name)
 
-    correlation_level = kwargs.get('correlation_level')
+    correlation_level = kwargs.pop('correlation_level')
 
     annual_mean_returns: DataFrame = None
     sharpe_ratios: DataFrame = None
@@ -36,6 +36,5 @@ def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_fr
         algorithm_type,
         **kwargs
     )
-
 
     return solution.decode(dataset_manager.get_full_companies_names(meta), annual_mean_returns)
