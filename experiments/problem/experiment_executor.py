@@ -33,7 +33,6 @@ class ExperimentExecutor():
             **experiment,
             'seed': seed,
             'sharpe_ratio': sol.fitness,
-            'convergence_history': problem.last_report,
         }
 
     def run_repeated_experiment(self, algorithm_type: str, seed: int, num_companies: int, sharpe_ratios: np.array, experiment: dict, num_runs: int):
