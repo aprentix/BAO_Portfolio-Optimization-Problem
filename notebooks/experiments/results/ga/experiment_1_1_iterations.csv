@@ -1,0 +1,11 @@
+experiment_id,num_assets,correlation_level,pop_size,max_generations,mutation_rate,repair_method,tournament_size,num_elites,seed,sharpe_ratio
+unknown,10,high,100,50,0.1,normalize,3,1,0,-inf
+unknown,10,high,100,50,0.1,normalize,3,1,0,-inf
+unknown,10,high,100,50,0.1,normalize,3,1,0,-inf
+unknown,10,high,100,50,0.1,normalize,3,1,0,-inf
+unknown,10,high,100,50,0.1,normalize,3,1,0,-inf
+unknown,10,high,100,50,0.1,normalize,3,1,0,-inf
+unknown,10,high,100,50,0.1,normalize,3,1,0,-inf
+unknown,10,high,100,50,0.1,normalize,3,1,0,-inf
+unknown,10,high,100,50,0.1,normalize,3,1,0,-inf
+unknown,10,high,100,50,0.1,normalize,3,1,0,-inf
