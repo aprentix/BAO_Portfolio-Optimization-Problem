@@ -112,7 +112,7 @@ class GAPortfolioOptimization:
             for candidate in repaired_candidates:
                 assert np.isclose(sum(candidate), 1.0, atol=1e-9), "Weights do not sum to 1 before evaluation!"
             if hasattr(self.evaluator, '__call__'):
-                return [self.evaluator(c) for c in repaired_candidates]
+                return self.evaluator(repaired_candidates)
             raise ValueError("Evaluator must be a callable function")
 
         # Wrap variation operators to repair candidates
