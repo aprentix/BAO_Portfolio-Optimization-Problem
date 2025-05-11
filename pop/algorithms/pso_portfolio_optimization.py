@@ -54,8 +54,7 @@ class PSOPortfolioOptimization:
 
     def default_generator(self, random, args):
         """Generate valid initial portfolio weights"""
-        weights = np.array([random.random()
-                           for _ in range(args.get('num_assets', 10))])
+        weights = np.array([random.random() for _ in range(args.get('num_assets', 10))])
         return self.portfolio_repair(weights, args).tolist()
 
     def history_observer(self, population, num_generations, num_evaluations, args):
@@ -101,7 +100,7 @@ class PSOPortfolioOptimization:
         def wrapped_evaluator(candidates, args):
             # Batch repair and evaluation
             repaired = [self.portfolio_repair(c, args) for c in candidates]
-            return [self.evaluator(c) for c in repaired]
+            return self.evaluator(repaired) 
 
         # Determine the number of variables (dimensions)
         if hasattr(self.bounder, 'lower_bound') and hasattr(self.bounder.lower_bound, '__len__'):
