@@ -7,10 +7,10 @@ This problem is crucial for both institutional investors managing billions of do
 
 import sys
 import os
-import pandas as pd
 from pop.cli import parse_args
 from pop.runner import runner
 from pop.util.print_results import print_results
+from pop.util.file_saver import save_results, save_fitness_history, save_diversity_history
 
 def main():
     args = parse_args()
@@ -40,27 +40,35 @@ def main():
     # Print results to console
     print_results(sharpe_ratio, annual_return, weights)
 
-    # Save results to a CSV file
-    results_dir = os.path.join("results", args.type)
-    os.makedirs(results_dir, exist_ok=True)
-    results_file = os.path.join(results_dir, "results.csv")
-    pd.DataFrame([
-        {"Company": k, "Weight": v, "Percentage": v * 100}
-        for k, v in weights.items()
-    ]).to_csv(results_file, index=False)
-    print(f"Results saved to {results_file}")
+    # --- Save Results ---
+    # Simplify correlation level
+    correlation_str = {
+        "low": "L",
+        "medium": "M",
+        "high": "H",
+        None: "N"
+    }.get(kwargs['correlation_level'], "N")
+
+    # Simplify parameter string
+    if kwargs['algorithm_type'] == "ga":
+        param_str = f"ps-{kwargs['pop_size']}_mg-{kwargs['max_generations']}_mr-{kwargs['mutation_rate']}"
+    elif kwargs['algorithm_type'] == "pso":
+        param_str = f"ss-{kwargs['swarm_size']}_mi-{kwargs['max_iterations']}_w-{kwargs['w']}"
+
+    # Define the results directory relative to the project root
+    results_dir = os.path.join("results", kwargs['algorithm_type'])
+    base_filename = f"exp_{correlation_str}_{param_str}"
+
+    # Save results
+    save_results(results_dir, base_filename, weights, sharpe_ratio, annual_return)
 
     # Save fitness history if requested
     if args.save_fitness:
-        fitness_file = os.path.join(results_dir, "fitness_history.csv")
-        pd.DataFrame({"Generation": range(len(fitness_history)), "Fitness": fitness_history}).to_csv(fitness_file, index=False)
-        print(f"Fitness history saved to {fitness_file}")
+        save_fitness_history(results_dir, base_filename, fitness_history)
 
     # Save diversity history if requested
     if args.save_diversity:
-        diversity_file = os.path.join(results_dir, "diversity_history.csv")
-        pd.DataFrame({"Generation": range(len(diversity_history)), "Diversity": diversity_history}).to_csv(diversity_file, index=False)
-        print(f"Diversity history saved to {diversity_file}")
+        save_diversity_history(results_dir, base_filename, diversity_history)
 
     return 0
 
