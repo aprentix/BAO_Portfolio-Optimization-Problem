@@ -42,6 +42,7 @@ class GAPortfolioOptimization:
 
         # State tracking
         self.best_fitness_history = []
+        self.diversity_history = []
         self.current_generation = 0
 
         # Validate parameters
@@ -62,10 +63,15 @@ class GAPortfolioOptimization:
         return [w / sum(weights) for w in weights]
 
     def history_observer(self, population, num_generations, num_evaluations, args):
-        """Track best fitness and adapt parameters"""
+        """Track best fitness and diversity"""
         best = max(population)
         self.best_fitness_history.append(best.fitness)
         self.current_generation = num_generations
+
+        # Calculate diversity as the mean standard deviation of weights
+        positions = np.array([ind.candidate for ind in population])
+        diversity = np.mean(np.std(positions, axis=0))
+        self.diversity_history.append(diversity)
 
         # Adapt mutation rate
         self.mutation_rate = self._adapt_mutation_rate(num_generations)

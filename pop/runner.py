@@ -37,4 +37,5 @@ def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_fr
         **kwargs
     )
 
-    return solution.decode(dataset_manager.get_full_companies_names(meta), annual_mean_returns)
+    # Return fitness and diversity history along with the solution
+    return solution.decode(dataset_manager.get_full_companies_names(meta), annual_mean_returns), problem.fitness_history, problem.diversity_history

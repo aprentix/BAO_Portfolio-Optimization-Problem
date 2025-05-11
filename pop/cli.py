@@ -44,6 +44,12 @@ def parse_args():
     global_group.add_argument(
         "--seed", type=int, help="Random seed for reproducibility", 
         default=None)
+    global_group.add_argument(
+        "--save-fitness", action="store_true", 
+        help="Save fitness evolution to a CSV file")
+    global_group.add_argument(
+        "--save-diversity", action="store_true", 
+        help="Save diversity evolution to a CSV file")
     
     # GA specific options
     ga_group = parser.add_argument_group('Genetic Algorithm options (only used when -t ga)')

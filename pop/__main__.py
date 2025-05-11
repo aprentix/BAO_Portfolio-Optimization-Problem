@@ -6,7 +6,8 @@ This problem is crucial for both institutional investors managing billions of do
 """
 
 import sys
-
+import os
+import pandas as pd
 from pop.cli import parse_args
 from pop.runner import runner
 from pop.util.print_results import print_results
@@ -30,11 +31,36 @@ def main():
         if value is not None:
             kwargs[key] = value
 
-    portfolio_sharpe_ratio, portfolio_annual_return, companies_weights = runner(
-        **kwargs)
+    # Run the optimization
+    results, fitness_history, diversity_history = runner(**kwargs)
 
-    print_results(portfolio_sharpe_ratio,
-                  portfolio_annual_return, companies_weights)
+    # Unpack results
+    sharpe_ratio, annual_return, weights = results
+
+    # Print results to console
+    print_results(sharpe_ratio, annual_return, weights)
+
+    # Save results to a CSV file
+    results_dir = os.path.join("results", args.type)
+    os.makedirs(results_dir, exist_ok=True)
+    results_file = os.path.join(results_dir, "results.csv")
+    pd.DataFrame([
+        {"Company": k, "Weight": v, "Percentage": v * 100}
+        for k, v in weights.items()
+    ]).to_csv(results_file, index=False)
+    print(f"Results saved to {results_file}")
+
+    # Save fitness history if requested
+    if args.save_fitness:
+        fitness_file = os.path.join(results_dir, "fitness_history.csv")
+        pd.DataFrame({"Generation": range(len(fitness_history)), "Fitness": fitness_history}).to_csv(fitness_file, index=False)
+        print(f"Fitness history saved to {fitness_file}")
+
+    # Save diversity history if requested
+    if args.save_diversity:
+        diversity_file = os.path.join(results_dir, "diversity_history.csv")
+        pd.DataFrame({"Generation": range(len(diversity_history)), "Diversity": diversity_history}).to_csv(diversity_file, index=False)
+        print(f"Diversity history saved to {diversity_file}")
 
     return 0
 

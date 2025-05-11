@@ -162,6 +162,9 @@ class PortfolioOptimization(benchmarks.Benchmark):
         ga = GAPortfolioOptimization(**kwargs)
         sol: Solution = ga.run(seed=kwargs.get('seed'))
         self._report = ga.report
+        # Store fitness and diversity histories
+        self.fitness_history = ga.best_fitness_history
+        self.diversity_history = ga.diversity_history
         return sol
 
     def __run_pso(self, **kwargs) -> Solution:
@@ -177,6 +180,9 @@ class PortfolioOptimization(benchmarks.Benchmark):
         pso = PSOPortfolioOptimization(**kwargs)
         sol: Solution = pso.run(seed=kwargs.get('seed'))
         self._report = pso.report
+        # Store fitness and diversity histories
+        self.fitness_history = pso.best_fitness_history
+        self.diversity_history = pso.diversity_history
         return sol
     
     @property
