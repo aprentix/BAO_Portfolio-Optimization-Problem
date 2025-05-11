@@ -14,7 +14,11 @@ def normalize_weights(weights: np.ndarray) -> np.ndarray:
     """
     weights = np.maximum(weights, 0)
     total = weights.sum()
-    return weights / total if total > 0 else np.ones_like(weights) / len(weights)
+    if total == 0:
+        return np.ones_like(weights) / len(weights)  # Equal weights if all are zero
+    normalized = weights / total
+    normalized /= normalized.sum()  # Double normalization for safety
+    return np.round(normalized, 9)  # Round to 9 decimal places for numerical stability
 
 def clip_weights(weights: np.ndarray, max_pos: float = 0.1) -> np.ndarray:
     """
@@ -48,35 +52,37 @@ def restart_weights(weights: np.ndarray,
     return normalize_weights(weights)
 
 def shrink_weights(weights: np.ndarray, 
-                  max_pos: float = 0.1) -> np.ndarray:
+                  max_pos: float = 0.1,
+                  tolerance: float = 1e-6,
+                  max_iter: int = 100) -> np.ndarray:
     """
-    Enforce position limits through iterative adjustment.
+    Iteratively enforce position limits with guaranteed convergence.
     
     1. Remove negative weights
-    2. If total > 1, scale down
-    3. Apply position limits
-    4. Re-normalize
-    
-    Args:
-        weights: Raw portfolio weights
-        max_pos: Maximum allowed position size
-        
-    Returns:
-        Valid weights respecting all constraints
+    2. Apply position limits
+    3. Normalize while preserving limits
     """
     # Step 1: No short-selling
     positive_weights = np.maximum(weights, 0)
     
-    # Step 2: Cap total at 1
-    total = positive_weights.sum()
-    if total > 1:
-        positive_weights /= total
-        
-    # Step 3: Apply position limit
-    limited_weights = np.clip(positive_weights, 0, max_pos)
+    # Step 2: Initial clipping
+    clipped = np.clip(positive_weights, 0, max_pos)
     
-    # Step 4: Final normalization
-    return normalize_weights(limited_weights)
+    # Iterative adjustment
+    prev_total = 0
+    for _ in range(max_iter):
+        current_total = clipped.sum()
+        
+        # Check convergence
+        if abs(current_total - prev_total) < tolerance:
+            break
+            
+        # Scale weights proportionally within limits
+        clipped = np.minimum(clipped * (1 / current_total), max_pos)
+        prev_total = current_total
+    
+    # Final normalization
+    return clipped / clipped.sum()
 
 # --- ALGORITHM-SPECIFIC WRAPPERS ---
 def pso_repair(candidate: List[float], 

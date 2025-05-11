@@ -3,6 +3,7 @@ from inspyred.ec import Individual
 from random import Random
 from pop.util.solution import Solution
 from pop.util.repair_methods import REPAIR_METHODS_GA
+import numpy as np
 
 
 class GAPortfolioOptimization:
@@ -57,7 +58,8 @@ class GAPortfolioOptimization:
 
     def default_generator(self, random, args):
         """Default portfolio weight generator"""
-        return [random.random() for _ in range(args.get('num_assets', 10))]
+        weights = [random.random() for _ in range(args.get('num_assets', 10))]
+        return [w / sum(weights) for w in weights]
 
     def history_observer(self, population, num_generations, num_evaluations, args):
         """Track best fitness and adapt parameters"""
@@ -82,24 +84,47 @@ class GAPortfolioOptimization:
         ga.observer = self.history_observer
         ga.selector = self.selector
         ga.replacer = ec.replacers.generational_replacement
-        ga.maintainer = self.portfolio_repair  # Proper constraint handling
 
-        # Configure variation operators
-        ga.variator = [
-            ec.variators.blend_crossover,
-            ec.variators.gaussian_mutation
-        ]
+        # Custom maintainer to handle portfolio constraints
+        def portfolio_maintainer(random, population, args):
+            repaired_pop = []
+            for ind in population:
+                # Repair candidate
+                repaired = self.portfolio_repair(random, [ind.candidate], args)[0]
+                assert np.isclose(sum(repaired), 1.0, atol=1e-9), "Weights do not sum to 1 after repair!"
+                # Create new individual with repaired candidate
+                new_ind = Individual(repaired)
+                new_ind.fitness = ind.fitness  # Preserve previous fitness
+                repaired_pop.append(new_ind)
+            return repaired_pop
+
+        ga.maintainer = portfolio_maintainer   
 
         # Wrap generator and evaluator for constraint management
         def wrapped_generator(random, args):
             candidate = self.generator(random, args)
-            return self.portfolio_repair(None, candidate, args)
+            repaired = self.portfolio_repair(random, [candidate], args)[0]
+            assert np.isclose(sum(repaired), 1.0, atol=1e-9), "Weights do not sum to 1 after generation!"
+            return repaired
 
         def wrapped_evaluator(candidates, args):
-            # Batch evaluation for efficiency
+            repaired_candidates = [self.portfolio_repair(None, [c], args)[0] for c in candidates]
+            for candidate in repaired_candidates:
+                assert np.isclose(sum(candidate), 1.0, atol=1e-9), "Weights do not sum to 1 before evaluation!"
             if hasattr(self.evaluator, '__call__'):
-                return [self.evaluator(c) for c in candidates]
+                return [self.evaluator(c) for c in repaired_candidates]
             raise ValueError("Evaluator must be a callable function")
+
+        # Wrap variation operators to repair candidates
+        def repaired_variator(random, candidates, args):
+            varied_candidates = ec.variators.blend_crossover(random, candidates, args)
+            varied_candidates = ec.variators.gaussian_mutation(random, varied_candidates, args)
+            repaired_candidates = [self.portfolio_repair(random, [c], args)[0] for c in varied_candidates]
+            for candidate in repaired_candidates:
+                assert np.isclose(sum(candidate), 1.0, atol=1e-9), "Weights do not sum to 1 after variation!"
+            return repaired_candidates
+
+        ga.variator = repaired_variator
 
         # Evolve population
         final_pop = ga.evolve(

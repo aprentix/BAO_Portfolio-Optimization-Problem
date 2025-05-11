@@ -118,7 +118,7 @@ class PSOPortfolioOptimization:
             maximize=True,
             bounder=self.bounder,
             max_generations=self.max_iterations,
-            num_variables=num_variables,  # Correctly set the number of variables
+            num_variables=num_variables,
             # Additional parameters
             velocity_clamp=self.velocity_clamp,
             neighborhood_size=int(self.swarm_size * 0.2)
