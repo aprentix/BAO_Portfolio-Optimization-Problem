@@ -29,13 +29,21 @@ def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_fr
         if user_input != 'y' and user_input != 'yes':
             raise SystemExit("Operation cancelled by user")
 
+    # Always use the filtered number of available companies!
+    filtered_num_companies = len(meta)
+    kwargs['num_companies'] = filtered_num_companies
+
     problem: PortfolioOptimization = PortfolioOptimization(
-        num_companies=num_companies, sharpe_ratios=sharpe_ratios.to_numpy())
+        num_companies=filtered_num_companies, sharpe_ratios=sharpe_ratios.to_numpy())
 
     solution: Solution = problem.optimize(
         algorithm_type,
         **kwargs
     )
 
-    # Return fitness and diversity history along with the solution
-    return solution.decode(dataset_manager.get_full_companies_names(meta), annual_mean_returns), problem.fitness_history, problem.diversity_history
+    # Get full company names as a list
+    company_names = list(dataset_manager.get_full_companies_names(meta))
+    # Ensure annual_mean_returns is filtered to meta
+    filtered_annual_mean_returns = annual_mean_returns.loc[meta].values
+
+    return solution.decode(company_names, filtered_annual_mean_returns), problem.fitness_history, problem.diversity_history

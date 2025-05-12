@@ -55,11 +55,20 @@ class PSOPortfolioOptimization:
     def default_generator(self, random, args):
         """Generate valid initial portfolio weights"""
         weights = np.array([random.random() for _ in range(args.get('num_assets', 10))])
-        return self.portfolio_repair(weights, args).tolist()
+        # Apply repair multiple times to ensure sum to 1
+        for _ in range(3):
+            weights = self.portfolio_repair(weights, args)
+        assert np.isclose(np.sum(weights), 1.0, atol=1e-9), "Weights do not sum to 1 after generation!"
+        return weights.tolist()
 
     def history_observer(self, population, num_generations, num_evaluations, args):
         """Track optimization progress and adapt parameters"""
         best = max(population)
+        # Apply repair to best candidate
+        repaired = self.portfolio_repair(best.candidate, args)
+        for _ in range(2):
+            repaired = self.portfolio_repair(repaired, args)
+        assert np.isclose(np.sum(repaired), 1.0, atol=1e-9), "Weights do not sum to 1 in observer!"
         self.best_fitness_history.append(best.fitness)
         self.current_iteration = num_generations
 
@@ -95,12 +104,22 @@ class PSOPortfolioOptimization:
 
         # Wrap components for constraint handling
         def wrapped_generator(random, args):
-            return self.generator(random, args)
+            weights = self.generator(random, args)
+            for _ in range(3):
+                weights = self.portfolio_repair(weights, args)
+            assert np.isclose(np.sum(weights), 1.0, atol=1e-9), "Weights do not sum to 1 after generation!"
+            return weights
 
         def wrapped_evaluator(candidates, args):
             # Batch repair and evaluation
-            repaired = [self.portfolio_repair(c, args) for c in candidates]
-            return self.evaluator(repaired) 
+            repaired = []
+            for c in candidates:
+                w = c
+                for _ in range(3):
+                    w = self.portfolio_repair(w, args)
+                assert np.isclose(np.sum(w), 1.0, atol=1e-9), "Weights do not sum to 1 before evaluation!"
+                repaired.append(w)
+            return self.evaluator(repaired)
 
         # Determine the number of variables (dimensions)
         if hasattr(self.bounder, 'lower_bound') and hasattr(self.bounder.lower_bound, '__len__'):
@@ -123,9 +142,13 @@ class PSOPortfolioOptimization:
             neighborhood_size=int(self.swarm_size * 0.2)
         )
 
-        # Return best solution
+        # Return best solution, repaired
         best = max(final_pop)
-        return Solution(best.candidate, best.fitness)
+        weights = best.candidate
+        for _ in range(3):
+            weights = self.portfolio_repair(weights, {})
+        assert np.isclose(np.sum(weights), 1.0, atol=1e-9), "Weights do not sum to 1 in final solution!"
+        return Solution(weights, best.fitness)
 
     @property
     def report(self) -> dict:
