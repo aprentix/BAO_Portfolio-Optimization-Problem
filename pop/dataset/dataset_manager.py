@@ -126,9 +126,6 @@ class DatasetManager:
         """
         Read annual resume data filtered by correlation level.
 
-        This method filters companies based on their average correlation level (low, medium, high)
-        and returns their annual resume data.
-
         Args:
             level (str): The correlation level to filter by. Must be one of: "low", "medium", "high".
             risk_free_rate_annual (float): The annual risk-free rate (as a decimal, e.g., 0.05 for 5%).
@@ -142,25 +139,17 @@ class DatasetManager:
                 - Volatility (pandas.Series): Volatility measures for filtered companies.
                 - Sharpe Ratio (pandas.Series): Sharpe ratios for filtered companies.
                 - Companies (list): List of filtered company identifiers.
-
-        Raises:
-            ValueError: If the specified correlation level doesn't exist.
-            FileNotFoundError: If any of the required paths do not exist.
-            Exception: For any other errors that occur during reading.
         """
         if not self.__is_valid_level(level):
-            raise ValueError(
-                f'This level of correlation doesn\'t exist: {level}')
+            raise ValueError(f"This level of correlation doesn't exist: {level}")
 
-        corr_df, _ = self.read_correlation(
-            risk_free_rate_annual, start_date, end_date)
+        # Step 1: Read the correlation matrix
+        corr_df, _ = self.read_correlation(risk_free_rate_annual, start_date, end_date)
 
-        avg_corr_per_stock = corr_df.apply(lambda row: (
-            np.abs(row.drop(row.name))).mean(), axis=1)
+        # Step 2: Filter companies based on the correlation level
+        filter_companies = self.__get_companies_same_correlation_level(corr_df, level)
 
-        filter_companies = self.__get_companies_same_correlation_level(
-            avg_corr_per_stock, level)
-
+        # Step 3: Read the annual resume for the filtered companies
         return self.read_annual_resume(risk_free_rate_annual, start_date, end_date, n_companies=n_companies, companies=filter_companies)
 
     def get_full_companies_names(self, symbols):
@@ -249,12 +238,12 @@ class DatasetManager:
         """
         return level in ["low", "medium", "high"]
 
-    def __get_companies_same_correlation_level(self, avg_corr_per_stock: pd.DataFrame, level: str):
+    def __get_companies_same_correlation_level(self, corr_matrix: pd.DataFrame, level: str) -> list:
         """
-        Filter companies based on their average correlation level.
+        Filter companies based on their pairwise Pearson correlation level.
 
         Args:
-            avg_corr_per_stock (pd.DataFrame): DataFrame containing average correlation values for each stock.
+            corr_matrix (pd.DataFrame): Correlation matrix of companies.
             level (str): The correlation level to filter by. Must be one of: "low", "medium", "high".
 
         Returns:
@@ -263,16 +252,33 @@ class DatasetManager:
         Raises:
             ValueError: If the specified correlation level doesn't exist.
         """
-        LOW_THRESHOLD = 0.333333
-        HIGH_THRESHOLD = 0.666666
+        if level not in ["low", "medium", "high"]:
+            raise ValueError(f"Invalid correlation level: {level}. Must be 'low', 'medium', or 'high'.")
 
-        match(level):
-            case "low":
-                return avg_corr_per_stock[avg_corr_per_stock < LOW_THRESHOLD].index.to_list()
-            case "medium":
-                return avg_corr_per_stock[(avg_corr_per_stock >= LOW_THRESHOLD) & (avg_corr_per_stock <= HIGH_THRESHOLD)].index.to_list()
-            case "high":
-                return avg_corr_per_stock[avg_corr_per_stock > HIGH_THRESHOLD].index.to_list()
-            case _:
-                raise ValueError(
-                    f'This level of correlation doesn\'t exist: {level}')
+        # Step 1: Exclude diagonal values (self-correlation)
+        np.fill_diagonal(corr_matrix.values, np.nan)
+
+        # Step 2: Flatten the matrix to get all pairwise correlations
+        pairwise_corr = corr_matrix.unstack().dropna()
+
+        # Step 3: Determine dynamic thresholds using quantiles
+        low_threshold = pairwise_corr.quantile(0.33)
+        high_threshold = pairwise_corr.quantile(0.66)
+
+        # Debugging: Print thresholds
+        print(f"[DEBUG] Low threshold: {low_threshold}, High threshold: {high_threshold}")
+
+        # Step 4: Filter companies based on the specified level
+        if level == "low":
+            filtered_pairs = pairwise_corr[pairwise_corr < low_threshold]
+        elif level == "medium":
+            filtered_pairs = pairwise_corr[(pairwise_corr >= low_threshold) & (pairwise_corr <= high_threshold)]
+        elif level == "high":
+            filtered_pairs = pairwise_corr[pairwise_corr > high_threshold]
+
+        # Step 5: Extract unique company identifiers from the filtered pairs
+        filtered_companies = set(filtered_pairs.index.get_level_values(0)).union(
+            set(filtered_pairs.index.get_level_values(1))
+        )
+
+        return list(filtered_companies)
