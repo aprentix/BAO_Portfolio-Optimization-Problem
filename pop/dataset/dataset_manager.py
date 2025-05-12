@@ -265,9 +265,6 @@ class DatasetManager:
         low_threshold = pairwise_corr.quantile(0.33)
         high_threshold = pairwise_corr.quantile(0.66)
 
-        # Debugging: Print thresholds
-        print(f"[DEBUG] Low threshold: {low_threshold}, High threshold: {high_threshold}")
-
         # Step 4: Filter companies based on the specified level
         if level == "low":
             filtered_pairs = pairwise_corr[pairwise_corr < low_threshold]
