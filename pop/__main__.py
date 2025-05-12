@@ -10,7 +10,7 @@ import os
 from pop.cli import parse_args
 from pop.runner import runner
 from pop.util.print_results import print_results
-from pop.util.file_saver import save_results, save_fitness_history, save_diversity_history
+from pop.util.file_saver import prepare_file_saving, save_results, save_fitness_history, save_diversity_history
 
 def main():
     args = parse_args()
@@ -40,27 +40,17 @@ def main():
     # Print results to console
     print_results(sharpe_ratio, annual_return, weights)
 
-    # --- Save Results ---
-    # Simplify correlation level
-    correlation_str = {
-        "low": "L",
-        "medium": "M",
-        "high": "H",
-        None: "N"
-    }.get(kwargs['correlation_level'], "N")
+    # Prepare file saving
+    params = kwargs if kwargs['algorithm_type'] == "ga" else kwargs
+    results_dir, base_filename = prepare_file_saving(
+        algorithm_type=kwargs['algorithm_type'],
+        correlation_level=kwargs['correlation_level'],
+        params=params
+    )
 
-    # Simplify parameter string
-    if kwargs['algorithm_type'] == "ga":
-        param_str = f"ps-{kwargs['pop_size']}_mg-{kwargs['max_generations']}_mr-{kwargs['mutation_rate']}"
-    elif kwargs['algorithm_type'] == "pso":
-        param_str = f"ss-{kwargs['swarm_size']}_mi-{kwargs['max_iterations']}_w-{kwargs['w']}"
-
-    # Define the results directory relative to the project root
-    results_dir = os.path.join("results", kwargs['algorithm_type'])
-    base_filename = f"exp_{correlation_str}_{param_str}"
-
-    # Save results
-    save_results(results_dir, base_filename, weights, sharpe_ratio, annual_return)
+    # Save results if requested
+    if args.save_results:
+        save_results(results_dir, base_filename, weights, sharpe_ratio, annual_return)
 
     # Save fitness history if requested
     if args.save_fitness:

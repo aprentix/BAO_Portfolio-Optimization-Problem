@@ -45,6 +45,9 @@ def parse_args():
         "--seed", type=int, help="Random seed for reproducibility", 
         default=None)
     global_group.add_argument(
+        "--save-results", action="store_true", 
+        help="Save optimization results to a CSV file")
+    global_group.add_argument(
         "--save-fitness", action="store_true", 
         help="Save fitness evolution to a CSV file")
     global_group.add_argument(
