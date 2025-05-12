@@ -169,15 +169,20 @@ class DatasetManager:
             KeyError: If any of the requested symbols are not found in the metadata.
         """
         symbols_path = os.path.join(self._dataset_dir, "symbols_valid_meta.csv")
-
         self.__is_valid_path(symbols_path)
-
         df = pd.read_csv(symbols_path, index_col=1)
 
-        try:
-            return df.loc[symbols, "Security Name"]
-        except KeyError as e:
-            raise KeyError(f"One or more symbols not found in metadata: {e}")
+        # Only keep symbols that exist in the metadata
+        available = [s for s in symbols if s in df.index]
+        missing = [s for s in symbols if s not in df.index]
+
+        if missing:
+            print(f"[WARNING] The following symbols are missing from metadata and will be skipped: {missing}")
+
+        if not available:
+            raise KeyError("None of the requested symbols were found in metadata.")
+
+        return df.loc[available, "Security Name"]
 
     def __get_base_data_path(self, risk_free_rate_annual: float, start_date: str, end_date: str) -> str:
         """
