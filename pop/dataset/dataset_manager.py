@@ -257,7 +257,7 @@ class DatasetManager:
         Raises:
             ValueError: If the specified correlation level doesn't exist.
         """
-        if level not in ["low", "medium", "high"]:
+        if not self.__is_valid_level(level):
             raise ValueError(f"Invalid correlation level: {level}. Must be 'low', 'medium', or 'high'.")
 
         # Step 1: Exclude diagonal values (self-correlation)
