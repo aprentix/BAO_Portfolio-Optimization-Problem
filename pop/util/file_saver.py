@@ -41,33 +41,58 @@ def save_results(results_dir, filename, weights, sharpe_ratio, annual_return):
     """
     Save portfolio optimization results to a CSV file.
     """
+    # Validate weights and metrics before saving
+    if not weights or np.isnan(sharpe_ratio) or np.isnan(annual_return):
+        print(f"⚠️ Invalid data encountered. Skipping save for {filename}.")
+        return
+
+    # Replace any NaN or infinite values in weights with equal distribution
+    weights = {k: (v if np.isfinite(v) else 1.0 / len(weights)) for k, v in weights.items()}
+
+    # Check if all weights sum to 1 (normalize if not)
+    total_weight = sum(weights.values())
+    if not np.isclose(total_weight, 1.0, atol=1e-9):
+        print(f"⚠️ Weights do not sum to 1 (total: {total_weight}). Normalizing.")
+        weights = {k: v / total_weight for k, v in weights.items()}
+
+    # Make sure results directory exists
     os.makedirs(results_dir, exist_ok=True)
     results_file = os.path.join(results_dir, f"{filename}_results.csv")
-    results_df = pd.DataFrame([
-        {"Company": k, "Weight": v, "Percentage": v * 100}
-        for k, v in weights.items()
-    ])
-    results_df["Sharpe Ratio"] = sharpe_ratio
-    results_df["Annual Return"] = annual_return
-    results_df.to_csv(results_file, index=False)
-    print(f"Results saved to {results_file}")
 
+    # Prepare DataFrame for saving
+    results_df = pd.DataFrame([{
+        "Company": k,
+        "Weight": v,
+        "Percentage": v * 100,
+        "Sharpe Ratio": sharpe_ratio,
+        "Annual Return": annual_return
+    } for k, v in weights.items()])
+
+    # Save results to CSV only if DataFrame is not empty
+    if not results_df.empty:
+        results_df.to_csv(results_file, index=False)
+        print(f"✅ Results saved to {results_file}")
+    else:
+        print(f"⚠️ No valid data to save for {filename}")
 
 def save_fitness_history(results_dir, filename, fitness_history):
     """
     Save fitness evolution history to a CSV file.
     """
-    if fitness_history:
+    if fitness_history and len(fitness_history) > 0:
         fitness_file = os.path.join(results_dir, f"{filename}_fitness.csv")
         pd.DataFrame({"Generation": range(len(fitness_history)), "Fitness": fitness_history}).to_csv(fitness_file, index=False)
-        print(f"Fitness history saved to {fitness_file}")
-
+        print(f"✅ Fitness history saved to {fitness_file}")
+    else:
+        print(f"⚠️ No valid fitness history to save for {filename}")
 
 def save_diversity_history(results_dir, filename, diversity_history):
     """
     Save diversity evolution history to a CSV file.
     """
-    if diversity_history:
+    if diversity_history and len(diversity_history) > 0:
         diversity_file = os.path.join(results_dir, f"{filename}_diversity.csv")
         pd.DataFrame({"Generation": range(len(diversity_history)), "Diversity": diversity_history}).to_csv(diversity_file, index=False)
-        print(f"Diversity history saved to {diversity_file}")
+        print(f"✅ Diversity history saved to {diversity_file}")
+    else:
+        print(f"⚠️ No valid diversity history to save for {filename}")

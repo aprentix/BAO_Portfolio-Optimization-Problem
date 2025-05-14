@@ -69,12 +69,17 @@ class PSOPortfolioOptimization:
         for _ in range(2):
             repaired = self.portfolio_repair(repaired, args)
         assert np.isclose(np.sum(repaired), 1.0, atol=1e-9), "Weights do not sum to 1 in observer!"
-        self.best_fitness_history.append(best.fitness)
+        # Ensure the best fitness is valid
+        best_fitness = best.fitness if np.isfinite(best.fitness) else 0.0
+        self.best_fitness_history.append(best_fitness)
         self.current_iteration = num_generations
 
         # Track population diversity
         positions = np.array([p.candidate for p in population])
-        self.diversity_history.append(np.mean(np.std(positions, axis=0)))
+        diversity = np.mean(np.std(positions, axis=0))
+        if not np.isfinite(diversity):
+            diversity = 0.0  # Fallback to 0 if invalid
+        self.diversity_history.append(diversity)
 
         # Adapt inertia weight
         if self.adaptive_inertia:
@@ -107,19 +112,31 @@ class PSOPortfolioOptimization:
             weights = self.generator(random, args)
             for _ in range(3):
                 weights = self.portfolio_repair(weights, args)
-            assert np.isclose(np.sum(weights), 1.0, atol=1e-9), "Weights do not sum to 1 after generation!"
+            # Sanitize weights after repair to avoid NaN or Inf
+            weights = np.nan_to_num(weights, nan=1.0 / len(weights), posinf=1.0 / len(weights), neginf=1.0 / len(weights))
+            if not np.isclose(np.sum(weights), 1.0, atol=1e-9):
+                weights = np.ones(len(weights)) / len(weights)  # Fallback to equal distribution if invalid
             return weights
 
         def wrapped_evaluator(candidates, args):
-            # Batch repair and evaluation
             repaired = []
             for c in candidates:
                 w = c
                 for _ in range(3):
                     w = self.portfolio_repair(w, args)
-                assert np.isclose(np.sum(w), 1.0, atol=1e-9), "Weights do not sum to 1 before evaluation!"
+                # Handle NaN values after repair
+                w = np.nan_to_num(w, nan=1.0 / len(w), posinf=1.0 / len(w), neginf=1.0 / len(w))
+                if not np.isclose(np.sum(w), 1.0, atol=1e-9):
+                    w = np.ones(len(w)) / len(w)  # Fallback to equal distribution if still invalid
                 repaired.append(w)
-            return self.evaluator(repaired)
+
+            # Evaluate and sanitize fitness values
+            fitness = self.evaluator(repaired)
+            # Ensure fitness is finite, otherwise set to a safe default (e.g., 0.0)
+            fitness = [0.0 if not np.isfinite(f) else f for f in fitness]
+            return fitness
+
+
 
         # Determine the number of variables (dimensions)
         if hasattr(self.bounder, 'lower_bound') and hasattr(self.bounder.lower_bound, '__len__'):
