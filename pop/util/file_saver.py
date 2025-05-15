@@ -1,5 +1,6 @@
 import os
 import pandas as pd
+import numpy as np
 
 def prepare_file_saving(algorithm_type, correlation_level, params, root_path="results"):
     """
