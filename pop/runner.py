@@ -5,7 +5,7 @@ from pop.portfolio_optimization import PortfolioOptimization
 from pop.dataset.dataset_manager import DatasetManager
 from pop.util.solution import Solution
 
-def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_free_rate_annual: float, start_date: str, end_date: str, **kwargs) -> tuple[float, float, dict[str, float]]:
+def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_free_rate_annual: float, start_date: str, end_date: str, **kwargs) -> tuple[float, float, dict[str, float], list, list]:
     dataset_manager: DatasetManager = DatasetManager(dataset_folder_name)
 
     correlation_level = kwargs.pop('correlation_level')
@@ -42,4 +42,4 @@ def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_fr
     # Ensure annual_mean_returns is filtered to meta
     filtered_annual_mean_returns = annual_mean_returns.loc[meta].values
 
-    return solution.decode(company_names, filtered_annual_mean_returns), problem.fitness_history, problem.diversity_history
+    return solution.decode(company_names, filtered_annual_mean_returns), problem.report['fitness_history'], problem.report['diversity_history']
