@@ -25,9 +25,9 @@ def prepare_file_saving(algorithm_type, correlation_level, params, root_path="re
 
     # Simplify parameter string
     if algorithm_type == "ga":
-        param_str = f"ps-{params['pop_size']}_mg-{params['max_generations']}_mr-{params['mutation_rate']}"
+        param_str = f"ps-{params['num_companies']}_mg-{params['max_generations']}_mr-{params['mutation_rate']}"
     elif algorithm_type == "pso":
-        param_str = f"ss-{params['swarm_size']}_mi-{params['max_iterations']}_w-{params['w']}"
+        param_str = f"ss-{params['num_companies']}_mi-{params['max_iterations']}_w-{params['w']}"
     else:
         raise ValueError("Invalid algorithm type. Choose 'ga' or 'pso'.")
 
