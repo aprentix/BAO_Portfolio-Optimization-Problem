@@ -29,12 +29,8 @@ def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_fr
         if user_input != 'y' and user_input != 'yes':
             raise SystemExit("Operation cancelled by user")
 
-    # Always use the filtered number of available companies!
-    filtered_num_companies = len(meta)
-    kwargs['num_companies'] = filtered_num_companies
-
     problem: PortfolioOptimization = PortfolioOptimization(
-        num_companies=filtered_num_companies, sharpe_ratios=sharpe_ratios.to_numpy())
+        num_companies=len(meta), sharpe_ratios=sharpe_ratios.to_numpy())
 
     solution: Solution = problem.optimize(
         algorithm_type,
