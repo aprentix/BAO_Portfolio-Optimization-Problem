@@ -6,7 +6,6 @@ This problem is crucial for both institutional investors managing billions of do
 """
 
 import sys
-import os
 from pop.cli import parse_args
 from pop.runner import runner
 from pop.util.print_results import print_results
