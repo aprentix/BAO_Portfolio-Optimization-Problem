@@ -155,7 +155,7 @@ class GAPortfolioOptimization:
         return Solution(best.candidate, best.fitness)
 
     @property
-    def report(self):
+    def report(self) -> dict:
         """Generate report"""
         return {
             'generations': self.current_generation,

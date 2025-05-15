@@ -32,7 +32,7 @@ def main():
             kwargs[key] = value
 
     # Run the optimization
-    sharpe_ratio, annual_return, weights, fitness_history, diversity_history = runner(**kwargs)
+    (sharpe_ratio, annual_return, weights), fitness_history, diversity_history = runner(**kwargs)
 
     # Print results to console
     print_results(sharpe_ratio, annual_return, weights)
