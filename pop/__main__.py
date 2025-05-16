@@ -31,20 +31,16 @@ def main():
             kwargs[key] = value
 
     # Run the optimization
-    results, fitness_history, diversity_history = runner(**kwargs)
-
-    # Unpack results
-    sharpe_ratio, annual_return, weights = results
+    (sharpe_ratio, annual_return, weights), fitness_history, diversity_history = runner(**kwargs)
 
     # Print results to console
     print_results(sharpe_ratio, annual_return, weights)
 
     # Prepare file saving
-    params = kwargs if kwargs['algorithm_type'] == "ga" else kwargs
     results_dir, base_filename = prepare_file_saving(
         algorithm_type=kwargs['algorithm_type'],
         correlation_level=kwargs['correlation_level'],
-        params=params
+        params=kwargs
     )
 
     # Save results if requested

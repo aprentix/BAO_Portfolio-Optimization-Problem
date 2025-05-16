@@ -53,15 +53,13 @@ def parse_args():
     global_group.add_argument(
         "--save-diversity", action="store_true", 
         help="Save diversity evolution to a CSV file")
+    global_group.add_argument(
+        "--max-iterations", type=int, help="Maximum number of iterations/generations", 
+        default=300)
     
     # GA specific options
     ga_group = parser.add_argument_group('Genetic Algorithm options (only used when -t ga)')
-    ga_group.add_argument(
-        "--pop-size", type=int, help="Population size for GA", 
-        default=100)
-    ga_group.add_argument(
-        "--max-generations", type=int, help="Maximum number of generations for GA", 
-        default=300)
+
     ga_group.add_argument(
         "--mutation-rate", type=float, help="Mutation rate for GA", 
         default=0.1)
@@ -81,12 +79,6 @@ def parse_args():
     # PSO specific options
     pso_group = parser.add_argument_group('Particle Swarm Optimization options (only used when -t pso)')
     pso_group.add_argument(
-        "--swarm-size", type=int, help="Swarm size for PSO", 
-        default=100)
-    pso_group.add_argument(
-        "--max-iterations", type=int, help="Maximum number of iterations for PSO", 
-        default=300)
-    pso_group.add_argument(
         "--w", type=float, help="Inertia weight for PSO", 
         default=0.5)
     pso_group.add_argument(
@@ -102,7 +94,7 @@ def parse_args():
         "-l", "--level", choices=["low", "medium", "high"], 
         help="Setup correlation level between companies", default=None)
     other_group.add_argument(
-        "--repair-method", choices=["normalize", "clip", "restart"], 
+        "-rm" ,"--repair-method", choices=["normalize", "clip", "restart"], 
         default="normalize", 
         help="Choose repair method for constraint handling")
     

@@ -5,7 +5,7 @@ from pop.portfolio_optimization import PortfolioOptimization
 from pop.dataset.dataset_manager import DatasetManager
 from pop.util.solution import Solution
 
-def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_free_rate_annual: float, start_date: str, end_date: str, **kwargs) -> tuple[float, float, dict[str, float]]:
+def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_free_rate_annual: float, start_date: str, end_date: str, **kwargs) -> tuple[tuple[float, float, dict[str, float]], list, list]:
     dataset_manager: DatasetManager = DatasetManager(dataset_folder_name)
 
     correlation_level = kwargs.pop('correlation_level')
@@ -29,12 +29,8 @@ def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_fr
         if user_input != 'y' and user_input != 'yes':
             raise SystemExit("Operation cancelled by user")
 
-    # Always use the filtered number of available companies!
-    filtered_num_companies = len(meta)
-    kwargs['num_companies'] = filtered_num_companies
-
     problem: PortfolioOptimization = PortfolioOptimization(
-        num_companies=filtered_num_companies, sharpe_ratios=sharpe_ratios.to_numpy())
+        num_companies=len(meta), sharpe_ratios=sharpe_ratios.to_numpy())
 
     solution: Solution = problem.optimize(
         algorithm_type,
@@ -46,4 +42,4 @@ def runner(algorithm_type: str, dataset_folder_name, num_companies: int, risk_fr
     # Ensure annual_mean_returns is filtered to meta
     filtered_annual_mean_returns = annual_mean_returns.loc[meta].values
 
-    return solution.decode(company_names, filtered_annual_mean_returns), problem.fitness_history, problem.diversity_history
+    return solution.decode(company_names, filtered_annual_mean_returns), problem.report.get('fitness_history'), problem.report.get('diversity_history')
