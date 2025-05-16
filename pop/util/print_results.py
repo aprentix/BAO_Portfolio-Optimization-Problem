@@ -86,45 +86,37 @@ def plot_fitness_diversity(
 
 def compare_best_fitness_diversity(selected_configs, get_results_path, generate_base_filename):
     try:
-        # Load the best configurations for GA and PSO
-        ga_config = selected_configs[(selected_configs["algorithm"] == "GA") & (selected_configs["quality"] == "best")].iloc[0]
-        pso_config = selected_configs[(selected_configs["algorithm"] == "PSO") & (selected_configs["quality"] == "best")].iloc[0]
-
-        # Generate base filenames
-        ga_base_filename = generate_base_filename(ga_config, "ga") + "_aggregated"
-        pso_base_filename = generate_base_filename(pso_config, "pso") + "_aggregated"
-
-        # Load fitness and diversity data
-        ga_fitness_path = get_results_path(f"{ga_base_filename}_fitness.csv", "ga")
-        pso_fitness_path = get_results_path(f"{pso_base_filename}_fitness.csv", "pso")
-        ga_diversity_path = get_results_path(f"{ga_base_filename}_diversity.csv", "ga")
-        pso_diversity_path = get_results_path(f"{pso_base_filename}_diversity.csv", "pso")
-
-        ga_fitness = pd.read_csv(ga_fitness_path)
-        pso_fitness = pd.read_csv(pso_fitness_path)
-        ga_diversity = pd.read_csv(ga_diversity_path)
-        pso_diversity = pd.read_csv(pso_diversity_path)
+        # Use the quality-based folder and file naming
+        for algo in ["ga", "pso"]:
+            fitness_path = get_results_path(f"best/aggregated_best_aggregated_fitness.csv", algo)
+            diversity_path = get_results_path(f"best/aggregated_best_aggregated_diversity.csv", algo)
+            if algo == "ga":
+                ga_fitness = pd.read_csv(fitness_path)
+                ga_diversity = pd.read_csv(diversity_path)
+            else:
+                pso_fitness = pd.read_csv(fitness_path)
+                pso_diversity = pd.read_csv(diversity_path)
 
         # Plot fitness and diversity comparisons
         plt.figure(figsize=(14, 6))
 
         # Fitness Comparison
         plt.subplot(1, 2, 1)
-        plt.plot(ga_fitness['Generation'], ga_fitness['Fitness'], label='GA - Best', color='blue', linestyle='-', marker='o')
-        plt.plot(pso_fitness['Generation'], pso_fitness['Fitness'], label='PSO - Best', color='green', linestyle='--', marker='x')
+        plt.plot(ga_fitness['Generation'], ga_fitness['Mean Fitness'], label='GA - Best', color='blue', linestyle='-', marker='o')
+        plt.plot(pso_fitness['Generation'], pso_fitness['Mean Fitness'], label='PSO - Best', color='green', linestyle='--', marker='x')
         plt.title('Best Fitness Comparison (GA vs PSO)')
         plt.xlabel('Generation')
-        plt.ylabel('Fitness')
+        plt.ylabel('Mean Fitness')
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.legend()
 
         # Diversity Comparison
         plt.subplot(1, 2, 2)
-        plt.plot(ga_diversity['Generation'], ga_diversity['Diversity'], label='GA - Best', color='blue', linestyle='-', marker='o')
-        plt.plot(pso_diversity['Generation'], pso_diversity['Diversity'], label='PSO - Best', color='green', linestyle='--', marker='x')
+        plt.plot(ga_diversity['Generation'], ga_diversity['Mean Diversity'], label='GA - Best', color='blue', linestyle='-', marker='o')
+        plt.plot(pso_diversity['Generation'], pso_diversity['Mean Diversity'], label='PSO - Best', color='green', linestyle='--', marker='x')
         plt.title('Best Diversity Comparison (GA vs PSO)')
         plt.xlabel('Generation')
-        plt.ylabel('Diversity')
+        plt.ylabel('Mean Diversity')
         plt.grid(True, linestyle='--', alpha=0.7)
         plt.legend()
 
