@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 
 def print_results(sharpe_ratio, annual_return, weights_dict):
     """
@@ -190,3 +191,81 @@ def plot_diversity_evolution(diversity_history, title="Diversity Evolution Over 
         print(f"Diversity evolution plot saved to {save_path}")
     plt.show()
     plt.clf()
+
+def bar_plot(data, metric, title, ylabel):
+    plt.figure(figsize=(8, 6))
+    sns.barplot(data=data, x="quality", y=metric, hue="algorithm", errorbar=None)
+    plt.title(title)
+    plt.ylabel(ylabel)
+    plt.show()
+
+def box_plot(data, metric, title, ylabel):
+    plt.figure(figsize=(8, 6))
+    sns.boxplot(data=data, x="algorithm", y=metric, hue="quality")
+    plt.title(title)
+    plt.ylabel(ylabel)
+    plt.show()
+
+def scatter_plot(data, x_metric, y_metric, title, xlabel, ylabel):
+    plt.figure(figsize=(8, 6))
+    sns.scatterplot(data=data, x=x_metric, y=y_metric, hue="algorithm", style="quality")
+    plt.title(title)
+    plt.xlabel(xlabel)
+    plt.ylabel(ylabel)
+    plt.show()
+
+def plot_best_configs_across_correlation(correlation_levels):
+    """
+    Collects and visualizes the best configurations for GA and PSO across all correlation levels.
+    """
+    best_configs = []
+
+    for corr_level, file_path in correlation_levels.items():
+        data = pd.read_csv(file_path)
+        best_ga = data[(data["algorithm"] == "GA") & (data["quality"] == "best")].copy()
+        best_ga["correlation"] = corr_level
+        best_pso = data[(data["algorithm"] == "PSO") & (data["quality"] == "best")].copy()
+        best_pso["correlation"] = corr_level
+        best_configs.append(best_ga)
+        best_configs.append(best_pso)
+
+    best_configs_df = pd.concat(best_configs, ignore_index=True)
+
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(
+        data=best_configs_df,
+        x="correlation",
+        y="sharpe_ratio",
+        hue="algorithm"
+    )
+    plt.title("Best Sharpe Ratio by Correlation Level (GA vs PSO)")
+    plt.ylabel("Sharpe Ratio")
+    plt.xlabel("Correlation Level")
+    plt.legend(title="Algorithm")
+    plt.show()
+
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(
+        data=best_configs_df,
+        x="correlation",
+        y="annual_return",
+        hue="algorithm"
+    )
+    plt.title("Best Annual Return by Correlation Level (GA vs PSO)")
+    plt.ylabel("Annual Return")
+    plt.xlabel("Correlation Level")
+    plt.legend(title="Algorithm")
+    plt.show()
+
+    plt.figure(figsize=(10, 6))
+    sns.boxplot(
+        data=best_configs_df,
+        x="correlation",
+        y="runtime",
+        hue="algorithm"
+    )
+    plt.title("Best Execution Time by Correlation Level (GA vs PSO)")
+    plt.ylabel("Runtime (seconds)")
+    plt.xlabel("Correlation Level")
+    plt.legend(title="Algorithm")
+    plt.show()
