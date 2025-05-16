@@ -120,8 +120,8 @@ class PortfolioOptimization(benchmarks.Benchmark):
                     generator=self.generator,
                     evaluator=self.evaluator,
                     bounder=self._bounder,
-                    pop_size=self._num_companies,
-                    max_generations=kwargs.pop('max_iterations', 100),
+                    pop_size=kwargs.pop('pop_size', 100),
+                    max_generations=kwargs.pop('max_generations', 100),
                     selector=kwargs.pop(
                         'selector', ec.selectors.tournament_selection),
                     tournament_size=kwargs.pop('tournament_size', 2),
@@ -138,7 +138,7 @@ class PortfolioOptimization(benchmarks.Benchmark):
                     generator=self.generator,
                     evaluator=self.evaluator,
                     bounder=self._bounder,
-                    swarm_size=self._num_companies,
+                    swarm_size=kwargs.pop('swarm_size', 100),
                     max_iterations=kwargs.pop('max_iterations', 100),
                     w=kwargs.pop('w', 0.7),
                     c1=kwargs.pop('c1', 1.5),
@@ -162,6 +162,9 @@ class PortfolioOptimization(benchmarks.Benchmark):
         ga = GAPortfolioOptimization(**kwargs)
         sol: Solution = ga.run(seed=kwargs.get('seed'))
         self._report = ga.report
+        # Store fitness and diversity histories
+        self.fitness_history = ga.best_fitness_history
+        self.diversity_history = ga.diversity_history
         return sol
 
     def __run_pso(self, **kwargs) -> Solution:
@@ -177,6 +180,9 @@ class PortfolioOptimization(benchmarks.Benchmark):
         pso = PSOPortfolioOptimization(**kwargs)
         sol: Solution = pso.run(seed=kwargs.get('seed'))
         self._report = pso.report
+        # Store fitness and diversity histories
+        self.fitness_history = pso.best_fitness_history
+        self.diversity_history = pso.diversity_history
         return sol
     
     @property
