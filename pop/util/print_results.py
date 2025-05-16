@@ -39,9 +39,7 @@ def print_statistics(data, metric):
         print(pso_stats)
 
 def plot_fitness_diversity(
-    selected_configs,
     get_results_path,
-    generate_base_filename,
     algorithm_type,
     quality,
     correlation_level=None
@@ -51,8 +49,8 @@ def plot_fitness_diversity(
     """
     try:
         # Build the path to the correct subfolder
-        fitness_path = get_results_path(f"{quality}/aggregated_{quality}_aggregated_fitness.csv", algorithm_type.lower())
-        diversity_path = get_results_path(f"{quality}/aggregated_{quality}_aggregated_diversity.csv", algorithm_type.lower())
+        fitness_path = get_results_path(f"{quality}/aggregated_{quality}_aggregated_fitness.csv", algorithm_type.lower(), correlation_level)
+        diversity_path = get_results_path(f"{quality}/aggregated_{quality}_aggregated_diversity.csv", algorithm_type.lower(), correlation_level)
         fitness_data = pd.read_csv(fitness_path)
         diversity_data = pd.read_csv(diversity_path)
 
@@ -84,12 +82,12 @@ def plot_fitness_diversity(
     except Exception as e:
         print(f"❌ Could not plot for {algorithm_type.upper()} - {quality.capitalize()}: {e}")
 
-def compare_best_fitness_diversity(selected_configs, get_results_path, generate_base_filename):
+def compare_best_fitness_diversity(get_results_path, correlation_level=None):
     try:
         # Use the quality-based folder and file naming
         for algo in ["ga", "pso"]:
-            fitness_path = get_results_path(f"best/aggregated_best_aggregated_fitness.csv", algo)
-            diversity_path = get_results_path(f"best/aggregated_best_aggregated_diversity.csv", algo)
+            fitness_path = get_results_path(f"best/aggregated_best_aggregated_fitness.csv", algo, correlation_level)
+            diversity_path = get_results_path(f"best/aggregated_best_aggregated_diversity.csv", algo, correlation_level)
             if algo == "ga":
                 ga_fitness = pd.read_csv(fitness_path)
                 ga_diversity = pd.read_csv(diversity_path)
