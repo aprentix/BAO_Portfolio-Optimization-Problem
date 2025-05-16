@@ -50,20 +50,16 @@ def plot_fitness_diversity(
     Plot the evolution of fitness and diversity for a given algorithm and config quality.
     """
     try:
-        config = selected_configs[
-            (selected_configs["algorithm"].str.lower() == algorithm_type.lower()) &
-            (selected_configs["quality"] == quality)
-        ].iloc[0]
-        base_filename = generate_base_filename(config, algorithm_type, correlation_level) + "_aggregated"
-        fitness_path = get_results_path(f"{base_filename}_fitness.csv", algorithm_type.lower())
-        diversity_path = get_results_path(f"{base_filename}_diversity.csv", algorithm_type.lower())
+        # Build the path to the correct subfolder
+        fitness_path = get_results_path(f"{quality}/aggregated_{quality}_aggregated_fitness.csv", algorithm_type.lower())
+        diversity_path = get_results_path(f"{quality}/aggregated_{quality}_aggregated_diversity.csv", algorithm_type.lower())
         fitness_data = pd.read_csv(fitness_path)
         diversity_data = pd.read_csv(diversity_path)
 
         fig, axes = plt.subplots(1, 2, figsize=(14, 6))
 
         # Fitness
-        axes[0].plot(fitness_data['Generation'], fitness_data['Fitness'],
+        axes[0].plot(fitness_data['Generation'], fitness_data['Mean Fitness'],
                      label=f'{algorithm_type.upper()} - {quality.capitalize()}')
         axes[0].set_title(f'Fitness Evolution - {algorithm_type.upper()} ({quality.capitalize()})')
         axes[0].set_xlabel('Generation')
@@ -72,7 +68,7 @@ def plot_fitness_diversity(
         axes[0].legend()
 
         # Diversity
-        axes[1].plot(diversity_data['Generation'], diversity_data['Diversity'],
+        axes[1].plot(diversity_data['Generation'], diversity_data['Mean Diversity'],
                      label=f'{algorithm_type.upper()} - {quality.capitalize()}', color='green')
         axes[1].set_title(f'Diversity Evolution - {algorithm_type.upper()} ({quality.capitalize()})')
         axes[1].set_xlabel('Generation')

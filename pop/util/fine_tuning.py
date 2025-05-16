@@ -46,7 +46,7 @@ def get_param_combinations(param_grid):
     keys, values = zip(*param_grid.items())
     return [dict(zip(keys, combo)) for combo in product(*values)]
 
-def evaluate_config(algorithm_type, config, repair_method, NUM_RUNS, DATASET, NUM_COMPANIES, RISK_FREE_RATE, START_DATE, END_DATE, correlation_level, seed):
+def evaluate_config(algorithm_type, config, repair_method, num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed):
     scores, times, returns, generations = [], [], [], []
     results_dir, base_filename = prepare_file_saving(
         algorithm_type=algorithm_type,
@@ -54,16 +54,16 @@ def evaluate_config(algorithm_type, config, repair_method, NUM_RUNS, DATASET, NU
         params=config,
         root_path=os.path.join(get_project_root(), "experiments", "results")
     )
-    for run_id in range(1, NUM_RUNS + 1):
+    for run_id in range(1, num_runs + 1):
         start = time.time()
         try:
             results, fitness_history, diversity_history = runner(
                 algorithm_type=algorithm_type,
-                dataset_folder_name=DATASET,
-                num_companies=NUM_COMPANIES,
-                risk_free_rate_annual=RISK_FREE_RATE,
-                start_date=START_DATE,
-                end_date=END_DATE,
+                dataset_folder_name=dataset,
+                num_companies=num_companies,
+                risk_free_rate_annual=risk_free_rate,
+                start_date=start_date,
+                end_date=end_date,
                 correlation_level=correlation_level,
                 seed=seed + run_id,
                 repair_method=repair_method,
@@ -80,7 +80,7 @@ def evaluate_config(algorithm_type, config, repair_method, NUM_RUNS, DATASET, NU
             save_results(results_dir, run_filename, weights, sharpe_ratio, annual_return)
             save_fitness_history(results_dir, run_filename, fitness_history)
             save_diversity_history(results_dir, run_filename, diversity_history)
-            print(f"✅ Run {run_id}/{NUM_RUNS} completed for {algorithm_type} - {config}")
+            print(f"✅ Run {run_id}/{num_runs} completed for {algorithm_type} - {config}")
         except Exception as e:
             print(f"Error during evaluation of {algorithm_type} with config {config}: {e}")
     mean_score = np.mean(scores)
@@ -94,7 +94,7 @@ def evaluate_config(algorithm_type, config, repair_method, NUM_RUNS, DATASET, NU
     save_diversity_history(results_dir, aggregated_filename, diversity_history)
     return mean_score, std_score, mean_return, mean_time, mean_generations, config
 
-def fine_tune_algorithms(NUM_RUNS, DATASET, NUM_COMPANIES, RISK_FREE_RATE, START_DATE, END_DATE, correlation_level, seed, ga_param_grid, pso_param_grid, REPAIR_METHODS):
+def fine_tune_algorithms(num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed, ga_param_grid, pso_param_grid, REPAIR_METHODS):
     results = []
     for algo_type, param_grid in [("GA", ga_param_grid), ("PSO", pso_param_grid)]:
         print(f"Starting fine-tuning for {algo_type}...")
@@ -102,7 +102,7 @@ def fine_tune_algorithms(NUM_RUNS, DATASET, NUM_COMPANIES, RISK_FREE_RATE, START
             for config in get_param_combinations(param_grid):
                 print(f"Testing {algo_type} with config: {config} + repair method: {repair}")
                 mean_score, std_score, mean_return, mean_time, mean_generations, used_config = evaluate_config(
-                    algo_type.lower(), config, repair, NUM_RUNS, DATASET, NUM_COMPANIES, RISK_FREE_RATE, START_DATE, END_DATE, correlation_level, seed)
+                    algo_type.lower(), config, repair, num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed)
                 results.append({
                     "algorithm": algo_type,
                     "repair_method": repair,
@@ -227,7 +227,7 @@ def save_aggregated_history(results_dir, filename, mean_history, std_history, me
     aggregated_df.to_csv(aggregated_file, index=False)
     print(f"✅ Aggregated {metric} history saved to {aggregated_file}")
 
-def run_configuration(algorithm, config, num_runs, DATASET, NUM_COMPANIES, RISK_FREE_RATE, START_DATE, END_DATE, correlation_level, seed):
+def run_configuration(algorithm, config, num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed):
     results = []
     fitness_histories = []
     diversity_histories = []
@@ -243,11 +243,11 @@ def run_configuration(algorithm, config, num_runs, DATASET, NUM_COMPANIES, RISK_
             start = time.time()
             run_output, fitness_history, diversity_history = runner(
                 algorithm_type=algorithm.lower(),
-                dataset_folder_name=DATASET,
-                num_companies=NUM_COMPANIES,
-                risk_free_rate_annual=RISK_FREE_RATE,
-                start_date=START_DATE,
-                end_date=END_DATE,
+                dataset_folder_name=dataset,
+                num_companies=num_companies,
+                risk_free_rate_annual=risk_free_rate,
+                start_date=start_date,
+                end_date=end_date,
                 correlation_level=correlation_level,
                 seed=seed + run_id,
                 repair_method=config["repair_method"],
@@ -281,6 +281,7 @@ def run_configuration(algorithm, config, num_runs, DATASET, NUM_COMPANIES, RISK_
     filename = f"aggregated_{config['quality']}"
     save_aggregated_history(results_dir, filename, mean_fitness, std_fitness, "fitness")
     save_aggregated_history(results_dir, filename, mean_diversity, std_diversity, "diversity")
+    print(f"Returning DataFrame with {len(results)} results for {config['quality']} {algorithm}")
     return pd.DataFrame(results)
 
 # Function to find the best, median, and worst configurations
@@ -302,13 +303,13 @@ def select_configs(df, algorithm):
 
     return best_config, median_config, worst_config
 
-def run_selected_configs(fine_tuning_results, num_runs, DATASET, NUM_COMPANIES, RISK_FREE_RATE, START_DATE, END_DATE, correlation_level, seed):
+def run_selected_configs(fine_tuning_results, num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed):
     all_results = []
     for algo in ["GA", "PSO"]:
         best, median, worst = select_configs(fine_tuning_results, algo)
         for config in [best, median, worst]:
             print(f"🚀 Running {algo} - {config['quality']} configuration...")
-            result_df = run_configuration(algo, config, num_runs, DATASET, NUM_COMPANIES, RISK_FREE_RATE, START_DATE, END_DATE, correlation_level, seed)
+            result_df = run_configuration(algo, config, num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed)
             all_results.append(result_df)
     final_results_df = pd.concat(all_results, ignore_index=True)
     result_path = get_results_path("final_fine_tuning_results.csv")
@@ -316,12 +317,12 @@ def run_selected_configs(fine_tuning_results, num_runs, DATASET, NUM_COMPANIES, 
     print(f"✅ Final fine-tuning results saved to '{result_path}'")
     return final_results_df
 
-def fine_tune_algorithms_parallel(NUM_RUNS, DATASET, NUM_COMPANIES, RISK_FREE_RATE, START_DATE, END_DATE, correlation_level, seed, ga_param_grid, pso_param_grid, REPAIR_METHODS, max_workers=None):
+def fine_tune_algorithms_parallel(num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed, ga_param_grid, pso_param_grid, REPAIR_METHODS, max_workers=None):
     jobs = []
     for algo_type, param_grid in [("GA", ga_param_grid), ("PSO", pso_param_grid)]:
         for repair in REPAIR_METHODS:
             for config in get_param_combinations(param_grid):
-                jobs.append((algo_type.lower(), config, repair, NUM_RUNS, DATASET, NUM_COMPANIES, RISK_FREE_RATE, START_DATE, END_DATE, correlation_level, seed))
+                jobs.append((algo_type.lower(), config, repair, num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed))
     results = []
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
         futures = [executor.submit(evaluate_config, *job) for job in jobs]
@@ -349,15 +350,22 @@ def fine_tune_algorithms_parallel(NUM_RUNS, DATASET, NUM_COMPANIES, RISK_FREE_RA
         print(f"✅ Fine-tuning results for {algo_type} saved to '{result_path}'")
     return results
 
-def run_selected_configs_parallel(selected_configs, num_runs, DATASET, NUM_COMPANIES, RISK_FREE_RATE, START_DATE, END_DATE, correlation_level, seed, max_workers=None):
-    def run_single_config(config):
-        algo = config["algorithm"]
-        return run_configuration(
-            algo, config, num_runs, DATASET, NUM_COMPANIES, RISK_FREE_RATE, START_DATE, END_DATE, correlation_level, seed
-        )
+def run_single_config(config, num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed):
+    if "repair_method" not in config or pd.isna(config["repair_method"]) or config["repair_method"] == "":
+        config = config.copy()
+        config["repair_method"] = "normalize"
+    algo = config["algorithm"]
+    return run_configuration(
+        algo, config, num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed
+    )
+
+def run_selected_configs_parallel(selected_configs, num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed, max_workers=None):
     all_results = []
     with ProcessPoolExecutor(max_workers=max_workers) as executor:
-        futures = [executor.submit(run_single_config, config) for config in selected_configs]
+        futures = [
+            executor.submit(run_single_config, config, num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed)
+            for config in selected_configs
+        ]
         for future in tqdm(as_completed(futures), total=len(futures), desc="Selected configs"):
             try:
                 result_df = future.result()
