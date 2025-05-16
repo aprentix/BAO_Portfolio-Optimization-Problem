@@ -94,11 +94,11 @@ def evaluate_config(algorithm_type, config, repair_method, num_runs, dataset, nu
     save_diversity_history(results_dir, aggregated_filename, diversity_history)
     return mean_score, std_score, mean_return, mean_time, mean_generations, config
 
-def fine_tune_algorithms(num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed, ga_param_grid, pso_param_grid, REPAIR_METHODS):
+def fine_tune_algorithms(num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed, ga_param_grid, pso_param_grid, repair_methods):
     results = []
     for algo_type, param_grid in [("GA", ga_param_grid), ("PSO", pso_param_grid)]:
         print(f"Starting fine-tuning for {algo_type}...")
-        for repair in REPAIR_METHODS:
+        for repair in repair_methods:
             for config in get_param_combinations(param_grid):
                 print(f"Testing {algo_type} with config: {config} + repair method: {repair}")
                 mean_score, std_score, mean_return, mean_time, mean_generations, used_config = evaluate_config(
@@ -317,10 +317,10 @@ def run_selected_configs(fine_tuning_results, num_runs, dataset, num_companies, 
     print(f"✅ Final fine-tuning results saved to '{result_path}'")
     return final_results_df
 
-def fine_tune_algorithms_parallel(num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed, ga_param_grid, pso_param_grid, REPAIR_METHODS, max_workers=None):
+def fine_tune_algorithms_parallel(num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed, ga_param_grid, pso_param_grid, repair_methods, max_workers=None):
     jobs = []
     for algo_type, param_grid in [("GA", ga_param_grid), ("PSO", pso_param_grid)]:
-        for repair in REPAIR_METHODS:
+        for repair in repair_methods:
             for config in get_param_combinations(param_grid):
                 jobs.append((algo_type.lower(), config, repair, num_runs, dataset, num_companies, risk_free_rate, start_date, end_date, correlation_level, seed))
     results = []
