@@ -349,7 +349,7 @@ def fine_tune_algorithms_parallel(num_runs, dataset, num_companies, risk_free_ra
     for algo_type in ["GA", "PSO"]:
         algo_results = [r for r in results if r['algorithm'] == algo_type]
         df = pd.DataFrame(algo_results)
-        result_path = get_results_path("fine_tuning_results.csv", algo_type.lower())
+        result_path = get_results_path("fine_tuning_results.csv", algo_type.lower(), correlation_level)
         os.makedirs(os.path.dirname(result_path), exist_ok=True)
         df.to_csv(result_path, index=False)
         print(f"✅ Fine-tuning results for {algo_type} saved to '{result_path}'")
