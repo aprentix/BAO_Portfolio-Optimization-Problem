@@ -6,10 +6,10 @@
 
 ## Create Virtual Environment
 
-`python3 -m venv env`
+`python3 -m venv .venv`
 
 ## Activate the Virtual Environment
-`source env/bin/activate`
+`source .venv/bin/activate`
 
 ## Save and Load Dependencies with `requirements.txt`
 
@@ -25,4 +25,4 @@
 
 ## Delete a Virtual Environment
 
-`rm -rf env`
+`rm -rf .venv`

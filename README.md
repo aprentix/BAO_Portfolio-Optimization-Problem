@@ -6,6 +6,29 @@
 - Lara Gerlach
 - Raquel Diaz Chavez
 
+## How to run the project
+Use the project management script to set up and execute algorithms. 
+Walkthrough:
+1. Setup the Project
+```bash
+python3 manager --setup
+```
+
+Other script's commands in help:
+```bash
+python3 manager -h
+```
+
+2. Optimize portfolio
+```bash
+python3 -m pop -t ga -n 25
+```
+
+3. To see optimization options:
+```bash
+python3 -m pop --help
+```
+
 ## Background
 
 Portfolio optimization is a fundamental challenge in investment management, focusing on allocating capital among assets to maximize returns while minimizing risk. This problem is crucial for both institutional investors managing billions of dollars and individuals growing their savings.
@@ -18,7 +41,7 @@ Traditional approaches like Markowitz's mean-variance optimization rely on restr
 
 ## Problem Definition
 
-While portfolio optimization encompasses numerous variables and options in real-world scenarios, we've implemented a simplified approach with specific metrics for feasibility.
+Portfolio optimization involves numerous variables, but our implementation focuses on a simplified yet effective approach.
 
 ### Constraints
 

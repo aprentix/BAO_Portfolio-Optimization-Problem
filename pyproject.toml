@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pop"
+version = "1.0.0"
+description = "Portfolio optimization is a fundamental challenge in investment management, focusing on allocating capital among assets to maximize returns while minimizing risk. This problem is crucial for both institutional investors managing billions of dollars and individuals growing their savings."
+readme = "README.md"
+requires-python = ">=3.6"
+authors = [
+    { name = "Chen Jin Leonardo" },
+    { name = "Stefan Oshchypok" },
+    { name = "Lara Gerlach" },
+    { name = "Raquel Diaz Chavez" },
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/aprentix/BAO_Portfolio-Optimization-Problem"
+"Bug Tracker" = "https://github.com/aprentix/BAO_Portfolio-Optimization-Problem/issues"
+
+[project.scripts]
+pop = "pop.__main__:main"
+
+[tool.setuptools]
+packages = ["pop", "experiments"]
+
+[tool.setuptools.package-data]
+pop = ["**/*.py", "**/*.json"]
