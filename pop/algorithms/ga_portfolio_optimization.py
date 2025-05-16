@@ -159,5 +159,6 @@ class GAPortfolioOptimization:
         """Generate report"""
         return {
             'generations': self.current_generation,
-            'fitness_history': self.best_fitness_history
+            'fitness_history': self.best_fitness_history,
+            'diversity_history': self.diversity_history
         }

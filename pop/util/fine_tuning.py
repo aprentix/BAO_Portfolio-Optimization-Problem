@@ -24,12 +24,17 @@ def get_project_root():
             raise FileNotFoundError("Could not find project root containing 'pop' directory.")
         current_dir = parent_dir
 
-def get_results_path(filename, algorithm=None):
+def get_results_path(filename, algorithm=None, correlation_level=None):
     """
     Returns the path to the results file, optionally within an algorithm subfolder.
     """
     project_root = get_project_root()
-    results_dir = os.path.join(project_root, "experiments", "results")
+    # Join correlation_level and '_correlation' as a single folder name
+    if correlation_level is not None:
+        corr_folder = f"{correlation_level}_correlation"
+    else:
+        corr_folder = "none_correlation"
+    results_dir = os.path.join(project_root, "experiments", "results", corr_folder)
     if algorithm:
         return os.path.join(results_dir, algorithm, filename)
     return os.path.join(results_dir, filename)
